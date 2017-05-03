@@ -17,7 +17,7 @@
 #include <clang/Tooling/Tooling.h>
 #include <clang/Rewrite/Core/Rewriter.h>
 
-#include "RHSTemplate.hpp"
+#include "../RHS/RHSTemplate.hpp"
 #include "XInstance.hpp"
 
 using namespace clang;

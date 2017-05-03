@@ -25,10 +25,10 @@
 
 #include <iostream>
 
-#include "clang/Tooling/CommonOptionsParser.h"
+#include <clang/Tooling/CommonOptionsParser.h>
 
-#include "X.hpp"
-#include "LHSConfiguration.hpp"
+#include "common/X.hpp"
+#include "LHS/LHSConfiguration.hpp"
 
 using namespace clang::ast_matchers;
 using namespace X;

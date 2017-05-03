@@ -6,18 +6,18 @@
 //  Copyright © 2017 Ruben Opdebeeck. All rights reserved.
 //
 
-#ifndef TemplatePart_hpp
-#define TemplatePart_hpp
+#ifndef RHSTemplatePart_hpp
+#define RHSTemplatePart_hpp
 
 #include <string>
 
 namespace X {
 
-/// \class TemplatePart
-/// \brief Represents a part of a template
+/// \class RHSTemplatePart
+/// \brief Represents a part of a RHS template
 ///
 /// A template part can either be a string literal or a metavariable.
-class TemplatePart {
+class RHSTemplatePart {
 public:
     
     /// Possible types of a template part
@@ -36,12 +36,12 @@ public:
     /// Construct a template part
     /// \param type_ The type of the part
     /// \param content_ The content of the part
-    TemplatePart(TYPE type_, std::string content_) : type(type_), content(content_) {}
+    RHSTemplatePart(TYPE type_, std::string content_) : type(type_), content(content_) {}
     
     /// Construct an empty template part
-    TemplatePart();
+    RHSTemplatePart();
 };
 
 } // namespace X
 
-#endif /* TemplatePart_hpp */
+#endif /* RHSTemplatePart_hpp */

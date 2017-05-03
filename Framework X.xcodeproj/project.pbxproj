@@ -8,15 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		4563609A1E9CF21D00A31D00 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 456360991E9CF21D00A31D00 /* main.cpp */; };
-		456360A21E9CF34D00A31D00 /* templ.tmpl in Sources */ = {isa = PBXBuildFile; fileRef = 456360A11E9CF34D00A31D00 /* templ.tmpl */; };
-		456360A41E9CF35000A31D00 /* test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 456360A31E9CF35000A31D00 /* test.cpp */; };
-		4571730A1EBA0BE6008B3DB2 /* LHSConfiguration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 457173081EBA0BE6008B3DB2 /* LHSConfiguration.cpp */; };
-		457FA7801EADFDFE001ABD05 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 457FA77F1EADFDFE001ABD05 /* README.md */; };
-		458D48DA1EABA645007F44DE /* SourceReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 458D48D81EABA645007F44DE /* SourceReader.cpp */; };
-		458D48DD1EABAA5D007F44DE /* XInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 458D48DB1EABAA5D007F44DE /* XInstance.cpp */; };
-		458D48E41EABC7FE007F44DE /* X.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 458D48E31EABC7FE007F44DE /* X.cpp */; };
-		4590CB911EA8EB8100DC22D7 /* RHSTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4590CB901EA8EB8100DC22D7 /* RHSTemplate.cpp */; };
-		4590CB931EA8EBE600DC22D7 /* Lexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4590CB921EA8EBE500DC22D7 /* Lexer.cpp */; };
+		4571732C1EBA84BD008B3DB2 /* Lexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 457173281EBA84BD008B3DB2 /* Lexer.cpp */; };
+		4571732D1EBA84BD008B3DB2 /* SourceReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 457173291EBA84BD008B3DB2 /* SourceReader.cpp */; };
+		4571732E1EBA84BD008B3DB2 /* X.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4571732A1EBA84BD008B3DB2 /* X.cpp */; };
+		4571732F1EBA84BD008B3DB2 /* XInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4571732B1EBA84BD008B3DB2 /* XInstance.cpp */; };
+		457173321EBA84F4008B3DB2 /* LHSConfiguration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 457173301EBA84F4008B3DB2 /* LHSConfiguration.cpp */; };
+		457173331EBA84F4008B3DB2 /* RHSTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 457173311EBA84F4008B3DB2 /* RHSTemplate.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,23 +34,18 @@
 		456360A01E9CF23D00A31D00 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		456360A11E9CF34D00A31D00 /* templ.tmpl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = templ.tmpl; sourceTree = "<group>"; };
 		456360A31E9CF35000A31D00 /* test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test.cpp; sourceTree = "<group>"; };
-		457173081EBA0BE6008B3DB2 /* LHSConfiguration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LHSConfiguration.cpp; sourceTree = "<group>"; };
-		457173091EBA0BE6008B3DB2 /* LHSConfiguration.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = LHSConfiguration.hpp; sourceTree = "<group>"; };
-		4571730B1EBA153A008B3DB2 /* configSchema.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = configSchema.json; sourceTree = "<group>"; };
 		457173161EBA3D35008B3DB2 /* 3rd */ = {isa = PBXFileReference; lastKnownFileType = folder; path = 3rd; sourceTree = "<group>"; };
 		4571731A1EBA746C008B3DB2 /* config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = config.json; sourceTree = "<group>"; };
-		457ADB841EA8E2DB00F1267D /* RHSTemplate.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = RHSTemplate.hpp; sourceTree = "<group>"; };
-		457ADB861EA8E7F300F1267D /* Lexer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Lexer.hpp; sourceTree = "<group>"; };
+		4571731F1EBA827C008B3DB2 /* common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = common; sourceTree = "<group>"; };
+		457173231EBA82DF008B3DB2 /* RHS */ = {isa = PBXFileReference; lastKnownFileType = folder; path = RHS; sourceTree = "<group>"; };
+		457173241EBA830B008B3DB2 /* LHS */ = {isa = PBXFileReference; lastKnownFileType = folder; path = LHS; sourceTree = "<group>"; };
+		457173281EBA84BD008B3DB2 /* Lexer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Lexer.cpp; path = "Framework X/common/Lexer.cpp"; sourceTree = "<group>"; };
+		457173291EBA84BD008B3DB2 /* SourceReader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SourceReader.cpp; path = "Framework X/common/SourceReader.cpp"; sourceTree = "<group>"; };
+		4571732A1EBA84BD008B3DB2 /* X.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = X.cpp; path = "Framework X/common/X.cpp"; sourceTree = "<group>"; };
+		4571732B1EBA84BD008B3DB2 /* XInstance.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = XInstance.cpp; path = "Framework X/common/XInstance.cpp"; sourceTree = "<group>"; };
+		457173301EBA84F4008B3DB2 /* LHSConfiguration.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = LHSConfiguration.cpp; path = "Framework X/LHS/LHSConfiguration.cpp"; sourceTree = "<group>"; };
+		457173311EBA84F4008B3DB2 /* RHSTemplate.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RHSTemplate.cpp; path = "Framework X/RHS/RHSTemplate.cpp"; sourceTree = "<group>"; };
 		457FA77F1EADFDFE001ABD05 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		458D48D81EABA645007F44DE /* SourceReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SourceReader.cpp; sourceTree = "<group>"; };
-		458D48D91EABA645007F44DE /* SourceReader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SourceReader.hpp; sourceTree = "<group>"; };
-		458D48DB1EABAA5D007F44DE /* XInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XInstance.cpp; sourceTree = "<group>"; };
-		458D48DC1EABAA5D007F44DE /* XInstance.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = XInstance.hpp; sourceTree = "<group>"; };
-		458D48DF1EABC456007F44DE /* X.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = X.hpp; sourceTree = "<group>"; };
-		458D48E31EABC7FE007F44DE /* X.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = X.cpp; sourceTree = "<group>"; };
-		4590CB901EA8EB8100DC22D7 /* RHSTemplate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RHSTemplate.cpp; sourceTree = "<group>"; };
-		4590CB921EA8EBE500DC22D7 /* Lexer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Lexer.cpp; sourceTree = "<group>"; };
-		4590CB951EA8F20F00DC22D7 /* TemplatePart.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TemplatePart.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +62,12 @@
 		4563608D1E9CF21D00A31D00 = {
 			isa = PBXGroup;
 			children = (
+				457173301EBA84F4008B3DB2 /* LHSConfiguration.cpp */,
+				457173311EBA84F4008B3DB2 /* RHSTemplate.cpp */,
+				457173281EBA84BD008B3DB2 /* Lexer.cpp */,
+				457173291EBA84BD008B3DB2 /* SourceReader.cpp */,
+				4571732A1EBA84BD008B3DB2 /* X.cpp */,
+				4571732B1EBA84BD008B3DB2 /* XInstance.cpp */,
 				456360981E9CF21D00A31D00 /* Framework X */,
 				456360971E9CF21D00A31D00 /* Products */,
 			);
@@ -88,24 +86,13 @@
 			children = (
 				457173161EBA3D35008B3DB2 /* 3rd */,
 				456360991E9CF21D00A31D00 /* main.cpp */,
-				4590CB951EA8F20F00DC22D7 /* TemplatePart.hpp */,
-				457ADB841EA8E2DB00F1267D /* RHSTemplate.hpp */,
-				4590CB901EA8EB8100DC22D7 /* RHSTemplate.cpp */,
-				457ADB861EA8E7F300F1267D /* Lexer.hpp */,
-				4590CB921EA8EBE500DC22D7 /* Lexer.cpp */,
+				4571731F1EBA827C008B3DB2 /* common */,
+				457173241EBA830B008B3DB2 /* LHS */,
+				457173231EBA82DF008B3DB2 /* RHS */,
 				456360A01E9CF23D00A31D00 /* CMakeLists.txt */,
 				456360A11E9CF34D00A31D00 /* templ.tmpl */,
 				456360A31E9CF35000A31D00 /* test.cpp */,
-				458D48D81EABA645007F44DE /* SourceReader.cpp */,
-				458D48D91EABA645007F44DE /* SourceReader.hpp */,
-				458D48DB1EABAA5D007F44DE /* XInstance.cpp */,
-				458D48DC1EABAA5D007F44DE /* XInstance.hpp */,
-				458D48DF1EABC456007F44DE /* X.hpp */,
-				458D48E31EABC7FE007F44DE /* X.cpp */,
 				457FA77F1EADFDFE001ABD05 /* README.md */,
-				457173081EBA0BE6008B3DB2 /* LHSConfiguration.cpp */,
-				457173091EBA0BE6008B3DB2 /* LHSConfiguration.hpp */,
-				4571730B1EBA153A008B3DB2 /* configSchema.json */,
 				4571731A1EBA746C008B3DB2 /* config.json */,
 			);
 			path = "Framework X";
@@ -168,16 +155,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				458D48DD1EABAA5D007F44DE /* XInstance.cpp in Sources */,
-				456360A21E9CF34D00A31D00 /* templ.tmpl in Sources */,
-				4590CB911EA8EB8100DC22D7 /* RHSTemplate.cpp in Sources */,
+				457173321EBA84F4008B3DB2 /* LHSConfiguration.cpp in Sources */,
+				457173331EBA84F4008B3DB2 /* RHSTemplate.cpp in Sources */,
+				4571732C1EBA84BD008B3DB2 /* Lexer.cpp in Sources */,
+				4571732D1EBA84BD008B3DB2 /* SourceReader.cpp in Sources */,
+				4571732E1EBA84BD008B3DB2 /* X.cpp in Sources */,
+				4571732F1EBA84BD008B3DB2 /* XInstance.cpp in Sources */,
 				4563609A1E9CF21D00A31D00 /* main.cpp in Sources */,
-				4571730A1EBA0BE6008B3DB2 /* LHSConfiguration.cpp in Sources */,
-				458D48DA1EABA645007F44DE /* SourceReader.cpp in Sources */,
-				456360A41E9CF35000A31D00 /* test.cpp in Sources */,
-				457FA7801EADFDFE001ABD05 /* README.md in Sources */,
-				458D48E41EABC7FE007F44DE /* X.cpp in Sources */,
-				4590CB931EA8EBE600DC22D7 /* Lexer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

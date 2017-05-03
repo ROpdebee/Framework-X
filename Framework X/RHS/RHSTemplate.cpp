@@ -49,8 +49,8 @@ void RHSTemplate::parse(std::string filePath) {
         if (isMetaparameter(curr, prev)) {
             
             literalRange.setEnd(prev.getLocation()); // Don't include the question mark in the literal
-            _templateParts.push_back(TemplatePart(TemplatePart::LITERAL, _sr->readSourceRange(literalRange)));
-            _templateParts.push_back(TemplatePart(TemplatePart::METAVARIABLE, curr.getIdentifierInfo()->getName()));
+            _templateParts.push_back(RHSTemplatePart(RHSTemplatePart::LITERAL, _sr->readSourceRange(literalRange)));
+            _templateParts.push_back(RHSTemplatePart(RHSTemplatePart::METAVARIABLE, curr.getIdentifierInfo()->getName()));
             
             // Start a new literal range
             literalRange.setBegin(curr.getEndLoc());
@@ -65,7 +65,7 @@ void RHSTemplate::parse(std::string filePath) {
     }
     
     // Read the final literal and add this part as well
-    _templateParts.push_back(TemplatePart(TemplatePart::LITERAL, _sr->readSourceRange(literalRange)));
+    _templateParts.push_back(RHSTemplatePart(RHSTemplatePart::LITERAL, _sr->readSourceRange(literalRange)));
     
     _lexer->endLexing();
 }
@@ -81,8 +81,8 @@ std::string RHSTemplate::instantiate(const MatchFinder::MatchResult& bindings) {
     const ASTNodeBindings nodes(bindings.Nodes.getMap());
     ASTNodeBindings::const_iterator node;
     
-    for (TemplatePart part : _templateParts) {
-        if (part.type == TemplatePart::LITERAL) instantiated += part.content;
+    for (RHSTemplatePart part : _templateParts) {
+        if (part.type == RHSTemplatePart::LITERAL) instantiated += part.content;
         else {
             node = nodes.find(part.content);
             if (node != nodes.end()) instantiated += _sr->readSourceRange(node->second, bindings.SourceManager);
@@ -94,8 +94,8 @@ std::string RHSTemplate::instantiate(const MatchFinder::MatchResult& bindings) {
 }
 
 void RHSTemplate::dumpTemplateParts() {
-    for (TemplatePart part : _templateParts) {
-        if (part.type == TemplatePart::LITERAL) std::cerr << part.content;
+    for (RHSTemplatePart part : _templateParts) {
+        if (part.type == RHSTemplatePart::LITERAL) std::cerr << part.content;
         else std::cerr << "<" << part.content << ">";
     }
     std::cerr << std::endl;

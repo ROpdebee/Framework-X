@@ -17,10 +17,10 @@
 #include <clang/AST/ASTTypeTraits.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
 
-#include "XInstance.hpp"
-#include "Lexer.hpp"
-#include "TemplatePart.hpp"
-#include "SourceReader.hpp"
+#include "../common/XInstance.hpp"
+#include "../common/Lexer.hpp"
+#include "../common/SourceReader.hpp"
+#include "RHSTemplatePart.hpp"
 
 // Assume RHS templates generally contain only 10 or less parts
 #define TEMPLATE_PARTS_LENGTH 10
@@ -42,7 +42,7 @@ class RHSTemplate {
     ///
     /// We use an LLVM SmallVector for this purpose because generally, RHS templates do not consist of
     /// many parts. In case of an exceptionally large template, this vector can be grown quite efficiently.
-    SmallVector<TemplatePart, TEMPLATE_PARTS_LENGTH> _templateParts;
+    SmallVector<RHSTemplatePart, TEMPLATE_PARTS_LENGTH> _templateParts;
     
     /// Common instance of framework X
     XInstance &_xi;
