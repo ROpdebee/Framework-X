@@ -9,14 +9,14 @@
 #ifndef XInstance_hpp
 #define XInstance_hpp
 
-#include "llvm/Support/Host.h"
-#include "llvm/ADT/IntrusiveRefCntPtr.h"
+#include <llvm/Support/Host.h>
+#include <llvm/ADT/IntrusiveRefCntPtr.h>
 
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Basic/TargetOptions.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/LangOptions.h"
+#include <clang/Frontend/CompilerInstance.h>
+#include <clang/Basic/TargetOptions.h>
+#include <clang/Basic/TargetInfo.h>
+#include <clang/Basic/SourceManager.h>
+#include <clang/Basic/LangOptions.h>
 
 #include "Lexer.hpp"
 #include "SourceReader.hpp"

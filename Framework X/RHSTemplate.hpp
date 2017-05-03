@@ -12,10 +12,10 @@
 #include <string>
 #include <iostream>
 
-#include "llvm/ADT/SmallVector.h"
-#include "clang/ASTMatchers/ASTMatchFinder.h"
-#include "clang/AST/ASTTypeTraits.h"
-#include "clang/ASTMatchers/ASTMatchers.h"
+#include <llvm/ADT/SmallVector.h>
+#include <clang/ASTMatchers/ASTMatchFinder.h>
+#include <clang/AST/ASTTypeTraits.h>
+#include <clang/ASTMatchers/ASTMatchers.h>
 
 #include "XInstance.hpp"
 #include "Lexer.hpp"
@@ -53,11 +53,11 @@ class RHSTemplate {
     /// The source reader
     SourceReader* _sr;
 
-    /// \brief Split a template into its parts
+    /// \brief Parse a template into its parts
     ///
     /// This will lex the template to find metaparameters and instantiate the templateParts
     /// \param filePath Path to the RHS template file
-    void splitTemplate(std::string filePath);
+    void parse(std::string filePath);
     
 public:
     /// \brief Constructor for a RHS template.

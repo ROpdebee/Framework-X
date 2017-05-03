@@ -27,10 +27,10 @@ bool isMetaparameter(Token curr, Token prev) {
 RHSTemplate::RHSTemplate(std::string filePath, XInstance &xi) : _xi(xi) {
     _lexer = _xi.lexer();
     _sr = _xi.sourceReader();
-    splitTemplate(filePath);
+    parse(filePath);
 }
 
-void RHSTemplate::splitTemplate(std::string filePath) {
+void RHSTemplate::parse(std::string filePath) {
     
     _lexer->beginLexing(filePath);
     

@@ -13,9 +13,9 @@
 
 #include <string>
 
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Lex/Token.h"
-#include "clang/Lex/Preprocessor.h"
+#include <clang/Frontend/CompilerInstance.h>
+#include <clang/Lex/Token.h>
+#include <clang/Lex/Preprocessor.h>
 
 using clang::CompilerInstance;
 

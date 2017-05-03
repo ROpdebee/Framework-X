@@ -12,10 +12,10 @@
 #include <string>
 #include <vector>
 
-#include "clang/ASTMatchers/ASTMatchers.h"
-#include "clang/ASTMatchers/ASTMatchFinder.h"
-#include "clang/Tooling/Tooling.h"
-#include "clang/Rewrite/Core/Rewriter.h"
+#include <clang/ASTMatchers/ASTMatchers.h>
+#include <clang/ASTMatchers/ASTMatchFinder.h>
+#include <clang/Tooling/Tooling.h>
+#include <clang/Rewrite/Core/Rewriter.h>
 
 #include "RHSTemplate.hpp"
 #include "XInstance.hpp"

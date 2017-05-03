@@ -1,5 +1,5 @@
 bool someFunction() {
-	return true;
+    return true;
 }
 
 bool someOtherFunction() {
@@ -7,16 +7,15 @@ bool someOtherFunction() {
 }
 
 int main() {
-    // Replaced!
-if (someFunction()) {
-        // Replaced!
-if (someOtherFunction()) { return 1; } else return 2;
-    } else // Replaced!
-if (someOtherFunction()) {
+    if (someFunction() == true) {
+        if (someOtherFunction() != false) {
+            return 1;
+        } else return 2;
+    } else if (someOtherFunction() == true) {
         return 3;
     } else {
         return 4;
     }
-
-	return 0;
+    
+    return 0;
 }
