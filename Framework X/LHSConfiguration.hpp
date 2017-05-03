@@ -53,8 +53,8 @@ public:
     TemplateRange range;
     string identifier;
     
-    MetavarLoc(string ident, TemplateRange rng) : identifier(ident), range(rng) {};
-    MetavarLoc() : identifier(""), range(-1, 0) {};
+    MetavarLoc(string ident, TemplateRange rng) : range(rng), identifier(ident) {};
+    MetavarLoc() : range(-1, 0) {};
     
     bool isValid() { return range.begin != -1; }
 };
