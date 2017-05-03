@@ -1,0 +1,43 @@
+{
+	"definitions": {
+		"range": {
+			"type": "array",
+			"items": {
+				"type": "integer",
+				"minimum": 0
+			},
+			"minItems": 2,
+			"maxItems": 2
+		}
+	},
+
+	"title": "LHS Template Configuration",
+	"type": "object",
+	"properties": {
+		"templateSource": {
+			"type": "string",
+			"description": "The source file out of which to generate a LHS template"
+		},
+		"templateRange": {
+			"$ref": "#/definitions/range",
+			"description": "The range of the template in the source file"
+		},
+		"metaVariables": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"identifier": "string",
+					"range": { "$ref": "#/definitions/range" }
+				},
+				"required": ["identifier", "range"]
+			},
+			"description": "List of metavariables, associated with their source range in the source file"
+		},
+		"rhsTemplate": {
+			"type": "string",
+			"description": "Path to a RHS template to be used with this LHS template"
+		}
+	},
+	"required": ["templateSource", "templateRange", "metaVariables", "rhsTemplate"]
+}

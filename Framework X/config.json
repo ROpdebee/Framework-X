@@ -1,0 +1,15 @@
+{
+	"templateSource": "test.cpp",
+	"templateRange": [12, 38],
+	"metaVariables": [
+		{
+			"identifier": "x",
+			"range": [12, 14]
+		},
+		{
+			"identifier": "y",
+			"range": [36, 38]
+		}
+	],
+	"rhsTemplate": "templ.tmpl"
+}
