@@ -25,7 +25,7 @@ namespace X {
 /// \brief Common abstractions for reading source files
 class SourceReader {
     /// The global source manager
-    SourceManager *_sm;
+    SourceManager &_sm;
     
     /// Language options
     LangOptions &_lops;
@@ -34,7 +34,7 @@ public:
     /// Construct a source reader
     /// \param sm The global source manager
     /// \param lops Language options
-    SourceReader(SourceManager *sm, LangOptions &lops) : _sm(sm), _lops(lops) {}
+    SourceReader(SourceManager &sm, LangOptions &lops) : _sm(sm), _lops(lops) {}
     
     /// \brief Read a source range from a file, given a source range and a source manager.
     ///
@@ -42,25 +42,25 @@ public:
     /// \param sr The source range to read
     /// \param sm The source manager to use
     /// \return The source code in this range
-    std::string readSourceRange(const SourceRange sr, const SourceManager *sm);
+    std::string readSourceRange(const SourceRange sr, const SourceManager &sm) const;
     
     /// \brief Read a source range from a file, given a source range.
     ///
     /// Note: Source ranges already include the file to be read.
     /// \param sr The source range to read
     /// \return The source code in this range
-    std::string readSourceRange(const SourceRange sr);
+    std::string readSourceRange(const SourceRange sr) const;
     
     /// \brief Read a source range from a file, given an AST node and a source manager.
     /// \param node The AST node to read the source code for
     /// \param sm The source manager to use
     /// \return The source code for this AST node
-    std::string readSourceRange(const DynTypedNode &node, const SourceManager *sm);
+    std::string readSourceRange(const DynTypedNode &node, const SourceManager &sm) const;
     
     /// \brief Read a source range from a file, given an AST node.
     /// \param node The AST node to read the source code for
     /// \return The source code for this AST node
-    std::string readSourceRange(const DynTypedNode &node);
+    std::string readSourceRange(const DynTypedNode &node) const;
 
 };
 

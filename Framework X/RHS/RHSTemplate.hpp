@@ -16,10 +16,12 @@
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/AST/ASTTypeTraits.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
+#include <clang/Frontend/CompilerInstance.h>
+#include <clang/Basic/TargetOptions.h>
+#include <clang/Basic/TargetInfo.h>
 
-#include "../common/XInstance.hpp"
-#include "../common/Lexer.hpp"
-#include "../common/SourceReader.hpp"
+#include "Lexer.hpp"
+#include "SourceReader.hpp"
 #include "RHSTemplatePart.hpp"
 
 // Assume RHS templates generally contain only 10 or less parts
@@ -31,6 +33,7 @@ using namespace X;
 using clang::ast_matchers::MatchFinder;
 using ASTNodeBindings = clang::ast_matchers::internal::BoundNodesMap::IDToNodeMap;
 using clang::ast_type_traits::DynTypedNode;
+using clang::CompilerInstance;
 
 namespace X {
 
@@ -44,14 +47,14 @@ class RHSTemplate {
     /// many parts. In case of an exceptionally large template, this vector can be grown quite efficiently.
     SmallVector<RHSTemplatePart, TEMPLATE_PARTS_LENGTH> _templateParts;
     
-    /// Common instance of framework X
-    XInstance &_xi;
+    /// Compiler instance containing the necessary components for RHS templates
+    CompilerInstance _ci;
     
     /// The lexer
-    Lexer* _lexer;
+    Lexer *_lexer;
     
     /// The source reader
-    SourceReader* _sr;
+    SourceReader *_sr;
 
     /// \brief Parse a template into its parts
     ///
@@ -64,8 +67,9 @@ public:
     ///
     /// Reads the contents of the given filename and splits these contents to create the template parts.
     /// \param filePath The path to the RHS template file
-    /// \param xi The common instance of framework X
-    RHSTemplate(std::string filePath, XInstance &xi);
+    RHSTemplate(std::string filePath);
+    
+    ~RHSTemplate() { delete _lexer, delete _sr; }
     
     /// \brief Instantiate the RHS template using the provided node bindings.
     ///

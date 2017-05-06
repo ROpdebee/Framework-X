@@ -11,14 +11,16 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include <clang/ASTMatchers/ASTMatchers.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/Tooling/Tooling.h>
 #include <clang/Rewrite/Core/Rewriter.h>
+#include <llvm/Support/Path.h>
+#include <llvm/Support/raw_os_ostream.h>
 
 #include "../RHS/RHSTemplate.hpp"
-#include "XInstance.hpp"
 
 using namespace clang;
 using namespace clang::ast_matchers;
@@ -34,8 +36,10 @@ namespace X {
 /// \param compilations The compilation database.
 /// \param matcher The LHS matcher.
 /// \param rhs The path to the RHS template.
+/// \param overwriteChangedFiles If true, the transformation will overwrite changed files. If false, changes will be written to a new file.
 template <typename MatcherType>
-void transform(std::vector<std::string> sourceFiles, const CompilationDatabase &compilations, MatcherType matcher, std::string rhs);
+void transform(std::vector<std::string> sourceFiles, const CompilationDatabase &compilations, MatcherType matcher,
+               std::string rhs, bool overwriteChangedFiles = false);
     
 } // namespace X
 

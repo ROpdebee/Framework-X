@@ -24,9 +24,24 @@ bool isMetaparameter(Token curr, Token prev) {
         && !curr.hasLeadingSpace() && !curr.isAtStartOfLine();
 }
 
-RHSTemplate::RHSTemplate(std::string filePath, XInstance &xi) : _xi(xi) {
-    _lexer = _xi.lexer();
-    _sr = _xi.sourceReader();
+RHSTemplate::RHSTemplate(std::string filePath) {
+    
+    // Setup compiler instance
+    _ci.createDiagnostics();
+    
+    // Target Info
+    auto targetOpts = std::make_shared<clang::TargetOptions>();
+    targetOpts->Triple = llvm::sys::getDefaultTargetTriple();
+    clang::TargetInfo *targetInfo = clang::TargetInfo::CreateTargetInfo(_ci.getDiagnostics(), targetOpts);
+    _ci.setTarget(targetInfo);
+    
+    _ci.createFileManager();
+    _ci.createSourceManager(_ci.getFileManager());
+    _ci.createPreprocessor(clang::TU_Complete);
+    
+    _lexer = new Lexer(_ci.getFileManager(), _ci.getSourceManager(), _ci.getDiagnosticClient(),
+                       _ci.getPreprocessor(), _ci.getLangOpts());
+    _sr = new SourceReader(_ci.getSourceManager(), _ci.getLangOpts());
     parse(filePath);
 }
 
@@ -39,8 +54,8 @@ void RHSTemplate::parse(std::string filePath) {
     // Keep track of the source range for literal parts
     Token curr;
     Token prev;
-    SourceManager *sm(_xi.sourceManager());
-    SourceRange literalRange(sm->getLocForStartOfFile(sm->getMainFileID()));
+    const SourceManager &sm(_ci.getSourceManager());
+    SourceRange literalRange(sm.getLocForStartOfFile(sm.getMainFileID()));
     
     while (_lexer->lex(curr)) {
         
@@ -85,7 +100,7 @@ std::string RHSTemplate::instantiate(const MatchFinder::MatchResult& bindings) {
         if (part.type == RHSTemplatePart::LITERAL) instantiated += part.content;
         else {
             node = nodes.find(part.content);
-            if (node != nodes.end()) instantiated += _sr->readSourceRange(node->second, bindings.SourceManager);
+            if (node != nodes.end()) instantiated += _sr->readSourceRange(node->second, *bindings.SourceManager);
             else std::cerr << "No binding for " << part.content << std::endl;
         }
     }

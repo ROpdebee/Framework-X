@@ -7,11 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		453F52AD1EBE1B0200C524A2 /* Lexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 453F52AB1EBE1B0200C524A2 /* Lexer.cpp */; };
+		453F52AE1EBE1B0200C524A2 /* SourceReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 453F52AC1EBE1B0200C524A2 /* SourceReader.cpp */; };
 		4563609A1E9CF21D00A31D00 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 456360991E9CF21D00A31D00 /* main.cpp */; };
-		4571732C1EBA84BD008B3DB2 /* Lexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 457173281EBA84BD008B3DB2 /* Lexer.cpp */; };
-		4571732D1EBA84BD008B3DB2 /* SourceReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 457173291EBA84BD008B3DB2 /* SourceReader.cpp */; };
 		4571732E1EBA84BD008B3DB2 /* X.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4571732A1EBA84BD008B3DB2 /* X.cpp */; };
-		4571732F1EBA84BD008B3DB2 /* XInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4571732B1EBA84BD008B3DB2 /* XInstance.cpp */; };
 		457173321EBA84F4008B3DB2 /* LHSConfiguration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 457173301EBA84F4008B3DB2 /* LHSConfiguration.cpp */; };
 		457173331EBA84F4008B3DB2 /* RHSTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 457173311EBA84F4008B3DB2 /* RHSTemplate.cpp */; };
 /* End PBXBuildFile section */
@@ -29,6 +28,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		453F52A71EBE12EA00C524A2 /* test2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test2.cpp; sourceTree = "<group>"; };
+		453F52AB1EBE1B0200C524A2 /* Lexer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Lexer.cpp; path = "Framework X/RHS/Lexer.cpp"; sourceTree = "<group>"; };
+		453F52AC1EBE1B0200C524A2 /* SourceReader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SourceReader.cpp; path = "Framework X/RHS/SourceReader.cpp"; sourceTree = "<group>"; };
 		456360961E9CF21D00A31D00 /* Framework X */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Framework X"; sourceTree = BUILT_PRODUCTS_DIR; };
 		456360991E9CF21D00A31D00 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		456360A01E9CF23D00A31D00 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
@@ -39,10 +41,7 @@
 		4571731F1EBA827C008B3DB2 /* common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = common; sourceTree = "<group>"; };
 		457173231EBA82DF008B3DB2 /* RHS */ = {isa = PBXFileReference; lastKnownFileType = folder; path = RHS; sourceTree = "<group>"; };
 		457173241EBA830B008B3DB2 /* LHS */ = {isa = PBXFileReference; lastKnownFileType = folder; path = LHS; sourceTree = "<group>"; };
-		457173281EBA84BD008B3DB2 /* Lexer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Lexer.cpp; path = "Framework X/common/Lexer.cpp"; sourceTree = "<group>"; };
-		457173291EBA84BD008B3DB2 /* SourceReader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SourceReader.cpp; path = "Framework X/common/SourceReader.cpp"; sourceTree = "<group>"; };
 		4571732A1EBA84BD008B3DB2 /* X.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = X.cpp; path = "Framework X/common/X.cpp"; sourceTree = "<group>"; };
-		4571732B1EBA84BD008B3DB2 /* XInstance.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = XInstance.cpp; path = "Framework X/common/XInstance.cpp"; sourceTree = "<group>"; };
 		457173301EBA84F4008B3DB2 /* LHSConfiguration.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = LHSConfiguration.cpp; path = "Framework X/LHS/LHSConfiguration.cpp"; sourceTree = "<group>"; };
 		457173311EBA84F4008B3DB2 /* RHSTemplate.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RHSTemplate.cpp; path = "Framework X/RHS/RHSTemplate.cpp"; sourceTree = "<group>"; };
 		457FA77F1EADFDFE001ABD05 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -62,12 +61,11 @@
 		4563608D1E9CF21D00A31D00 = {
 			isa = PBXGroup;
 			children = (
+				453F52AB1EBE1B0200C524A2 /* Lexer.cpp */,
+				453F52AC1EBE1B0200C524A2 /* SourceReader.cpp */,
 				457173301EBA84F4008B3DB2 /* LHSConfiguration.cpp */,
 				457173311EBA84F4008B3DB2 /* RHSTemplate.cpp */,
-				457173281EBA84BD008B3DB2 /* Lexer.cpp */,
-				457173291EBA84BD008B3DB2 /* SourceReader.cpp */,
 				4571732A1EBA84BD008B3DB2 /* X.cpp */,
-				4571732B1EBA84BD008B3DB2 /* XInstance.cpp */,
 				456360981E9CF21D00A31D00 /* Framework X */,
 				456360971E9CF21D00A31D00 /* Products */,
 			);
@@ -92,6 +90,7 @@
 				456360A01E9CF23D00A31D00 /* CMakeLists.txt */,
 				456360A11E9CF34D00A31D00 /* templ.tmpl */,
 				456360A31E9CF35000A31D00 /* test.cpp */,
+				453F52A71EBE12EA00C524A2 /* test2.cpp */,
 				457FA77F1EADFDFE001ABD05 /* README.md */,
 				4571731A1EBA746C008B3DB2 /* config.json */,
 			);
@@ -155,12 +154,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				453F52AD1EBE1B0200C524A2 /* Lexer.cpp in Sources */,
+				453F52AE1EBE1B0200C524A2 /* SourceReader.cpp in Sources */,
 				457173321EBA84F4008B3DB2 /* LHSConfiguration.cpp in Sources */,
 				457173331EBA84F4008B3DB2 /* RHSTemplate.cpp in Sources */,
-				4571732C1EBA84BD008B3DB2 /* Lexer.cpp in Sources */,
-				4571732D1EBA84BD008B3DB2 /* SourceReader.cpp in Sources */,
 				4571732E1EBA84BD008B3DB2 /* X.cpp in Sources */,
-				4571732F1EBA84BD008B3DB2 /* XInstance.cpp in Sources */,
 				4563609A1E9CF21D00A31D00 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -582,6 +580,7 @@
 		4563609E1E9CF21D00A31D00 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Framework\\ X/3rd/json-schema-validator/build",
@@ -754,6 +753,7 @@
 		4563609F1E9CF21D00A31D00 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Framework\\ X/3rd/json-schema-validator/build",

@@ -9,11 +9,14 @@ bool someOtherFunction() {
 }
 
 int main() {
-    if (someFunction() == true) {
-        if (someOtherFunction() != false) {
+    // Replaced!
+if (someFunction()) {
+        // Replaced!
+if (someOtherFunction()) {
             return 1;
         } else return 2;
-    } else if (someOtherFunction() == true) {
+    } else // Replaced!
+if (someOtherFunction()) {
         return 3;
     } else {
         return 4;
