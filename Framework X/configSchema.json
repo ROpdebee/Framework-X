@@ -37,7 +37,12 @@
 		"rhsTemplate": {
 			"type": "string",
 			"description": "Path to a RHS template to be used with this LHS template"
-		}
+		},
+        "transformTemplateSource": {
+            "type": "boolean",
+            "description": "Flag to indicate whether or not the template source file should be transformed as well",
+            "default": true
+        }
 	},
 	"required": ["templateSource", "templateRange", "metaVariables", "rhsTemplate"]
 }

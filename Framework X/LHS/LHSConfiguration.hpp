@@ -16,6 +16,10 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <llvm/Support/Path.h>
+#include <llvm/ADT/SmallVector.h>
+#include <clang/Basic/VirtualFileSystem.h>
+
 #include <json.hpp>
 #include <json-schema.hpp>
 
@@ -67,6 +71,7 @@ class LHSConfiguration {
     TemplateRange templateRange; ///< The range of the template itself
     vector<MetavarLoc> metavariableRanges; ///< The metavariables and their associated ranges in the template
     string rhsTemplate; ///< The path to the RHS template to be used with this LHS template
+    bool transformTemplateSource; ///< Flag indicating if the template source file must be transformed as well
     
 public:
     /// Construct a LHS configuration from the given JSON file.
@@ -76,6 +81,12 @@ public:
     /// Dump the configuration onto the error stream
     /// Intended for debugging purposes
     void dumpConfiguration();
+    
+    const string& getTemplateSource() { return templateSource; }
+    const TemplateRange& getTemplateRange() { return templateRange; }
+    const vector<MetavarLoc>& getMetavariableRanges() { return metavariableRanges; }
+    const string& getRHSTemplate() { return rhsTemplate; }
+    bool shouldTransformTemplateSource() { return transformTemplateSource; }
 };
 
 }

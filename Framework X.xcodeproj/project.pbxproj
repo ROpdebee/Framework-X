@@ -45,6 +45,7 @@
 		457173301EBA84F4008B3DB2 /* LHSConfiguration.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = LHSConfiguration.cpp; path = "Framework X/LHS/LHSConfiguration.cpp"; sourceTree = "<group>"; };
 		457173311EBA84F4008B3DB2 /* RHSTemplate.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RHSTemplate.cpp; path = "Framework X/RHS/RHSTemplate.cpp"; sourceTree = "<group>"; };
 		457FA77F1EADFDFE001ABD05 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		45A6FE541EBE892D003CF53C /* configSchema.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = configSchema.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +94,7 @@
 				453F52A71EBE12EA00C524A2 /* test2.cpp */,
 				457FA77F1EADFDFE001ABD05 /* README.md */,
 				4571731A1EBA746C008B3DB2 /* config.json */,
+				45A6FE541EBE892D003CF53C /* configSchema.json */,
 			);
 			path = "Framework X";
 			sourceTree = "<group>";

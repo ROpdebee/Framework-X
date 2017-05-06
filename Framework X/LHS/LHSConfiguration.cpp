@@ -92,14 +92,47 @@ static json parseAndValidate(string configPath) {
     return config;
 }
 
+/// \brief Turn a possibly relative path into an absolute path
+/// Throws an exception whenever there is an issue converting the path,
+/// or when the file does not exist.
+static string getAbsolutePath(string path) {
+    static auto fs(clang::vfs::getRealFileSystem());
+    string absolute;
+    error_condition ok;
+    
+    // Turn the path into an absolute path if necessary
+    if (!llvm::sys::path::is_absolute(path)) {
+        llvm::SmallVector<char, 128> pathVector;
+        for (char &ch : path) pathVector.push_back(ch);
+        
+        // Check that there were no errors after making the path absolute
+        error_code error(fs->makeAbsolute(pathVector));
+        if (error != ok) throw MalformedConfigException(error.message());
+        
+        absolute.reserve(pathVector.size());
+        for (char &ch : pathVector) absolute += ch;
+    } else absolute = path;
+    
+    if (!fs->exists(absolute)) throw MalformedConfigException("File " + path + "does not exist");
+    
+    return absolute;
+}
+
 LHSConfiguration::LHSConfiguration(string jsonCfgPath) {
     
     // Don't catch any thrown exceptions, configuration will not make sense if the file is invalid
     json cfg(parseAndValidate(jsonCfgPath));
     
     // Simple data-types
-    templateSource = cfg["templateSource"].get<string>();
-    rhsTemplate = cfg["rhsTemplate"].get<string>();
+    // This may throw exceptions, forward them to the caller as the config will be invalid
+    templateSource = getAbsolutePath(cfg["templateSource"].get<string>());
+    rhsTemplate = getAbsolutePath(cfg["rhsTemplate"].get<string>());
+    
+    if (cfg.find("transformTemplateSource") != cfg.end()) {
+        transformTemplateSource = cfg["transformTemplateSource"].get<bool>();
+    } else {
+        transformTemplateSource = true;
+    }
     
     // Complex data-types
     auto jTemplateRange(cfg["templateRange"]);

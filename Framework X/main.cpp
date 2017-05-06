@@ -47,10 +47,10 @@ static llvm::cl::OptionCategory ToolCategory("Test");
 int main(int argc, const char **argv) {
     clang::tooling::CommonOptionsParser op(argc, argv, ToolCategory);
     
-    X::transform(op.getSourcePathList(), op.getCompilations(), mtchr, "templ.tmpl");
+    X::transform(op.getSourcePathList(), op.getCompilations(), "config.json");
     
-    LHSConfiguration conf("config.json");
-    conf.dumpConfiguration();
+    //LHSConfiguration conf("config.json");
+    //conf.dumpConfiguration();
     
     return 0;
 }

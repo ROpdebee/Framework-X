@@ -17,7 +17,7 @@ public:
     
     // Keep the default setRewriter implementation
     
-    void fileProcessed(FileID fid, std::string filename) override {
+    void fileProcessed(FileID fid, string filename) override {
         
         // Replace the file extension with ".transformed.cpp" (or "cc" or any other, depending on the original extension)
         // when we shouldn't overwrite the source files
@@ -25,14 +25,15 @@ public:
             // Transform the filename to a vector, as LLVM's replace_extension only accepts vectors
             llvm::SmallVector<char, 128> filenameVector;
             llvm::raw_svector_ostream filenameStream(filenameVector);
-            filenameStream << filename; // No need for flushing the buffer, raw_svector_ostream is not buffered
+            // Ugly stream insertion, Xcode seems to think we're starting a template instantiation when using custom stream insertion operators, leading to issues with code indentation...
+            filenameStream.operator<<(filename); // No need for flushing the buffer, raw_svector_ostream is not buffered
             llvm::sys::path::replace_extension(filenameVector, "transformed" + llvm::sys::path::extension(filename));
             filename = filenameStream.str();
         }
         
         // .write() method of edit buffer only accepts LLVM's raw_ostream,
         // so create a normal output file stream and encapsulate that in an llvm::raw_ostream
-        std::ofstream outFile(filename);
+        ofstream outFile(filename);
         llvm::raw_os_ostream llvmStream(outFile);
         _pRewriter->getEditBuffer(fid).write(llvmStream);
     }
@@ -47,7 +48,7 @@ public:
     }
 };
 
-using ASTList = std::vector<std::unique_ptr<ASTUnit>>;
+using ASTList = vector<unique_ptr<ASTUnit>>;
 
 /// \brief Parse the given source files into ASTs, according to the compilation database. Parsed ASTs are inserted into the last parameter.
 ///
@@ -55,7 +56,7 @@ using ASTList = std::vector<std::unique_ptr<ASTUnit>>;
 /// \param sourceFiles The paths of the source files we need to parse.
 /// \param compilations The compilation database
 /// \param[out] ASTs The list of generated ASTs.
-static void buildASTs(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, ASTList &ASTs) {
+static void buildASTs(const SourceList &sourceFiles, const CompilationDatabase &compilations, ASTList &ASTs) {
     ClangTool ASTParserTool(compilations, sourceFiles);
     ASTParserTool.buildASTs(ASTs);
 }
@@ -67,7 +68,9 @@ static void buildASTs(const std::vector<std::string> &sourceFiles, const Compila
 /// The consumer will be notified using its `HandleTranslationUnit` method.
 /// \param ASTs The list of ASTs to consume. Will be matched in the order presented.
 /// \param consumer The AST consumer which does the matching on this AST.
-static void consumeASTs(ASTList &ASTs, std::unique_ptr<ASTConsumer> consumer, XCallback &cb) {
+/// \note Templated to accept both unique_ptr and shared_ptr
+template <typename smart_ptr>
+static void consumeASTs(vector<smart_ptr> &ASTs, unique_ptr<ASTConsumer> consumer, XCallback &cb) {
     for (auto &AST : ASTs) {
         cb.setRewriter(llvm::make_unique<Rewriter>(AST->getSourceManager(), AST->getLangOpts()));
         consumer->HandleTranslationUnit(AST->getASTContext());
@@ -77,8 +80,8 @@ static void consumeASTs(ASTList &ASTs, std::unique_ptr<ASTConsumer> consumer, XC
 
 // Many types of Matchers, so use a template to support them all
 template <typename MatcherType>
-void X::transform(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, MatcherType &matcher,
-                  std::string rhs, bool overwriteChangedFiles) {
+void X::transform(const SourceList &sourceFiles, const CompilationDatabase &compilations, MatcherType &matcher,
+                  string rhs, bool overwriteChangedFiles) {
     
     // Parse the source files to ASTs using a ClangTool
     ASTList ASTs;
@@ -95,7 +98,7 @@ void X::transform(const std::vector<std::string> &sourceFiles, const Compilation
 }
 
 template <typename MatcherType>
-void X::transform(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, MatcherType &matcher, XCallback &cb) {
+void X::transform(const SourceList &sourceFiles, const CompilationDatabase &compilations, MatcherType &matcher, XCallback &cb) {
     
     ASTList ASTs;
     buildASTs(sourceFiles, compilations, ASTs);
@@ -105,21 +108,66 @@ void X::transform(const std::vector<std::string> &sourceFiles, const Compilation
     consumeASTs(ASTs, finder.newASTConsumer(), cb);
 }
 
+void X::transform(SourceList sourceFiles, const CompilationDatabase &compilations, string LHSTemplateConfigFile) {
+    LHSConfiguration lhsConfig(LHSTemplateConfigFile);
+    
+    // Ensure the template source file also gets parsed
+    if (find(sourceFiles.begin(), sourceFiles.end(), lhsConfig.getTemplateSource()) != sourceFiles.end()
+        && compilations.getCompileCommands(lhsConfig.getTemplateSource()).empty()) {
+        llvm::errs() << "Template source file is not contained in the source list or the compilation database!\n";
+        return;
+    }
+    
+    // Parse to ASTs
+    ASTList ASTs;
+    buildASTs(sourceFiles, compilations, ASTs);
+    
+    // Convert the AST list from unique_ptrs to shared_ptrs as one of the ASTs (the template source)
+    // may need to be shared across the AST consumer and the LHS template
+    // It might be more efficient to not convert the smart pointers in case the AST does not need to be shared,
+    // but that incurs more overhead for allowing multiple possible types, forcing us to use even more (C++) templates
+    // While doing this, also verify that the template source was parsed correctly and save the pointer for later usage.
+    vector<shared_ptr<ASTUnit>> sharedASTs;
+    shared_ptr<ASTUnit> templateSourceAST;
+    bool templateSourceParsed = false;
+    for (auto &AST : ASTs) {
+        shared_ptr<ASTUnit> sharedAST(move(AST));
+        
+        if (sharedAST->getMainFileName() == lhsConfig.getTemplateSource()) {
+            templateSourceParsed = true;
+            templateSourceAST = sharedAST;
             
+            // If we don't want to transform the template, don't add it now
+            if (!lhsConfig.shouldTransformTemplateSource()) continue;
+        }
+        
+        sharedASTs.push_back(sharedAST);
+    }
+    
+    // Clear the original AST list, the unique_ptrs are all null
+    ASTs.clear();
+    
+    if (!templateSourceParsed) {
+        llvm::errs() << "Template source file failed to parse\n";
+        return;
+    }
+}
+
+
 // Explicit initialization of templates so we can still split header and source files
-template void X::transform<StatementMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, StatementMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
-template void X::transform<DeclarationMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, DeclarationMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
-template void X::transform<TypeMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, TypeMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
-template void X::transform<TypeLocMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, TypeLocMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
-template void X::transform<NestedNameSpecifierMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
-template void X::transform<NestedNameSpecifierLocMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierLocMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
-template void X::transform<CXXCtorInitializerMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, CXXCtorInitializerMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
+template void X::transform<StatementMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, StatementMatcher &matcher, string rhs, bool overwriteChangedFiles);
+template void X::transform<DeclarationMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, DeclarationMatcher &matcher, string rhs, bool overwriteChangedFiles);
+template void X::transform<TypeMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, TypeMatcher &matcher, string rhs, bool overwriteChangedFiles);
+template void X::transform<TypeLocMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, TypeLocMatcher &matcher, string rhs, bool overwriteChangedFiles);
+template void X::transform<NestedNameSpecifierMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierMatcher &matcher, string rhs, bool overwriteChangedFiles);
+template void X::transform<NestedNameSpecifierLocMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierLocMatcher &matcher, string rhs, bool overwriteChangedFiles);
+template void X::transform<CXXCtorInitializerMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, CXXCtorInitializerMatcher &matcher, string rhs, bool overwriteChangedFiles);
 
 // Same for LHS matchers, RHS callback version of transform
-template void X::transform<StatementMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, StatementMatcher &matcher, XCallback &cb);
-template void X::transform<DeclarationMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, DeclarationMatcher &matcher, XCallback &cb);
-template void X::transform<TypeMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, TypeMatcher &matcher, XCallback &cb);
-template void X::transform<TypeLocMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, TypeLocMatcher &matcher, XCallback &cb);
-template void X::transform<NestedNameSpecifierMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierMatcher &matcher, XCallback &cb);
-template void X::transform<NestedNameSpecifierLocMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierLocMatcher &matcher, XCallback &cb);
-template void X::transform<CXXCtorInitializerMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, CXXCtorInitializerMatcher &matcher, XCallback &cb);
+template void X::transform<StatementMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, StatementMatcher &matcher, XCallback &cb);
+template void X::transform<DeclarationMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, DeclarationMatcher &matcher, XCallback &cb);
+template void X::transform<TypeMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, TypeMatcher &matcher, XCallback &cb);
+template void X::transform<TypeLocMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, TypeLocMatcher &matcher, XCallback &cb);
+template void X::transform<NestedNameSpecifierMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierMatcher &matcher, XCallback &cb);
+template void X::transform<NestedNameSpecifierLocMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierLocMatcher &matcher, XCallback &cb);
+template void X::transform<CXXCtorInitializerMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, CXXCtorInitializerMatcher &matcher, XCallback &cb);
