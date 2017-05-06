@@ -8,21 +8,16 @@
 
 #include "X.hpp"
 
-/// MatchCallback class to allow using AST matchers with RHS templates
-class XCallback : public MatchFinder::MatchCallback {
+class InternalCallback : public XCallback {
     RHSTemplate &_tmpl;
-    std::unique_ptr<Rewriter> _rewriter;
     bool _overwrite;
+    
 public:
-    XCallback(RHSTemplate &tmpl, bool overwrite) : _tmpl(tmpl), _rewriter(nullptr), _overwrite(overwrite) {}
+    InternalCallback(RHSTemplate &tmpl, bool overwrite) : _tmpl(tmpl), _overwrite(overwrite) {}
     
-    /// Assign a new rewriter to this callback
-    void setRewriter(std::unique_ptr<Rewriter> newRewriter) {
-        _rewriter = std::move(newRewriter);
-    }
+    // Keep the default setRewriter implementation
     
-    /// Called whenever the current file is fully processed
-    void fileProcessed(FileID fid, std::string filename) {
+    void fileProcessed(FileID fid, std::string filename) override {
         
         // Replace the file extension with ".transformed.cpp" (or "cc" or any other, depending on the original extension)
         // when we shouldn't overwrite the source files
@@ -39,71 +34,18 @@ public:
         // so create a normal output file stream and encapsulate that in an llvm::raw_ostream
         std::ofstream outFile(filename);
         llvm::raw_os_ostream llvmStream(outFile);
-        _rewriter->getEditBuffer(fid).write(llvmStream);
+        _pRewriter->getEditBuffer(fid).write(llvmStream);
     }
     
-    void run(const MatchFinder::MatchResult& res) {
+    void run(const MatchFinder::MatchResult& res) override {
         // Use underlying node map to assure we can handle multiple types of nodes
         auto nodes(res.Nodes.getMap());
         auto node(nodes.find("root"));
         assert(node != nodes.end() && "Root node is required");
         
-        _rewriter->ReplaceText(node->second.getSourceRange(), _tmpl.instantiate(res));
+        _pRewriter->ReplaceText(node->second.getSourceRange(), _tmpl.instantiate(res));
     }
 };
-
-/*/// \class MatcherConsumer
-/// \brief Custom class to allow us to avoid using Replacements and a RefactoringTool while still using AST matchers
-template <typename MatcherType>
-class MatcherConsumer : public ASTConsumer {
-    MatchFinder _finder;
-    XCallback _cb;
-public:
-    MatcherConsumer(MatcherType matcher, RHSTemplate &tmpl, Rewriter &rewriter) : _cb(tmpl, rewriter) {
-        _finder.addMatcher(matcher, &_cb);
-    }
-    
-    void HandleTranslationUnit(ASTContext &ctx) override {
-        _finder.matchAST(ctx);
-    }
-};
-
-/// \class TransformationAction
-/// \brief An action that gets created for each source file and can create AST consumers for this file
-template <typename MatcherType>
-class TransformationAction : public ASTFrontendAction {
-    MatcherType _matcher;
-    RHSTemplate &_tmpl;
-    Rewriter _rewriter;
-public:
-    TransformationAction(MatcherType matcher, RHSTemplate &tmpl) : _matcher(matcher), _tmpl(tmpl) {}
-    
-    /// Flush rewritten changes to disk
-    void EndSourceFileAction() override {
-        if (_rewriter.overwriteChangedFiles()) llvm::outs() << "Failed to save a file!\n";
-    }
-    
-    std::unique_ptr<ASTConsumer> CreateASTConsumer(CompilerInstance &CI, StringRef file) override {
-        _rewriter.setSourceMgr(CI.getSourceManager(), CI.getLangOpts());
-        return llvm::make_unique<MatcherConsumer<MatcherType>>(_matcher, _tmpl, _rewriter);
-    }
-};
-
-/// \class TransformationActionFactory
-/// \brief Factory class to create TransformationActions
-/// \see FrontendActionFactory
-/// We need to make our own factory so that we can pass the necessary arguments to the AST consumer
-template <typename MatcherType>
-class TransformationActionFactory : public FrontendActionFactory {
-    MatcherType _matcher;
-    RHSTemplate &_tmpl;
-public:
-    TransformationActionFactory(MatcherType matcher, RHSTemplate &tmpl) : _matcher(matcher), _tmpl(tmpl) {}
-    
-    TransformationAction<MatcherType> *create() override {
-        return new TransformationAction<MatcherType>(_matcher, _tmpl);
-    }
-};*/
 
 using ASTList = std::vector<std::unique_ptr<ASTUnit>>;
 
@@ -113,7 +55,7 @@ using ASTList = std::vector<std::unique_ptr<ASTUnit>>;
 /// \param sourceFiles The paths of the source files we need to parse.
 /// \param compilations The compilation database
 /// \param[out] ASTs The list of generated ASTs.
-static void buildASTs(std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, ASTList &ASTs) {
+static void buildASTs(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, ASTList &ASTs) {
     ClangTool ASTParserTool(compilations, sourceFiles);
     ASTParserTool.buildASTs(ASTs);
 }
@@ -135,7 +77,7 @@ static void consumeASTs(ASTList &ASTs, std::unique_ptr<ASTConsumer> consumer, XC
 
 // Many types of Matchers, so use a template to support them all
 template <typename MatcherType>
-void X::transform(std::vector<std::string> sourceFiles, const CompilationDatabase &compilations, MatcherType matcher,
+void X::transform(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, MatcherType &matcher,
                   std::string rhs, bool overwriteChangedFiles) {
     
     // Parse the source files to ASTs using a ClangTool
@@ -145,20 +87,39 @@ void X::transform(std::vector<std::string> sourceFiles, const CompilationDatabas
     // Set up the matching
     RHSTemplate rhsTemplate(rhs);
     MatchFinder finder;
-    Rewriter rewriter;
-    XCallback cb(rhsTemplate, overwriteChangedFiles);
+    InternalCallback cb(rhsTemplate, overwriteChangedFiles);
     finder.addMatcher(matcher, &cb);
     
     // Match the ASTs
     consumeASTs(ASTs, finder.newASTConsumer(), cb);
 }
 
+template <typename MatcherType>
+void X::transform(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, MatcherType &matcher, XCallback &cb) {
+    
+    ASTList ASTs;
+    buildASTs(sourceFiles, compilations, ASTs);
+    MatchFinder finder;
+    finder.addMatcher(matcher, &cb);
+    
+    consumeASTs(ASTs, finder.newASTConsumer(), cb);
+}
 
+            
 // Explicit initialization of templates so we can still split header and source files
-template void X::transform<StatementMatcher>(std::vector<std::string> sourceFiles, const CompilationDatabase &compilations, StatementMatcher matcher, std::string rhs, bool overwriteChangedFiles);
-template void X::transform<DeclarationMatcher>(std::vector<std::string> sourceFiles, const CompilationDatabase &compilations, DeclarationMatcher matcher, std::string rhs, bool overwriteChangedFiles);
-template void X::transform<TypeMatcher>(std::vector<std::string> sourceFiles, const CompilationDatabase &compilations, TypeMatcher matcher, std::string rhs, bool overwriteChangedFiles);
-template void X::transform<TypeLocMatcher>(std::vector<std::string> sourceFiles, const CompilationDatabase &compilations, TypeLocMatcher matcher, std::string rhs, bool overwriteChangedFiles);
-template void X::transform<NestedNameSpecifierMatcher>(std::vector<std::string> sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierMatcher matcher, std::string rhs, bool overwriteChangedFiles);
-template void X::transform<NestedNameSpecifierLocMatcher>(std::vector<std::string> sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierLocMatcher matcher, std::string rhs, bool overwriteChangedFiles);
-template void X::transform<CXXCtorInitializerMatcher>(std::vector<std::string> sourceFiles, const CompilationDatabase &compilations, CXXCtorInitializerMatcher matcher, std::string rhs, bool overwriteChangedFiles);
+template void X::transform<StatementMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, StatementMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
+template void X::transform<DeclarationMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, DeclarationMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
+template void X::transform<TypeMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, TypeMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
+template void X::transform<TypeLocMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, TypeLocMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
+template void X::transform<NestedNameSpecifierMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
+template void X::transform<NestedNameSpecifierLocMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierLocMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
+template void X::transform<CXXCtorInitializerMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, CXXCtorInitializerMatcher &matcher, std::string rhs, bool overwriteChangedFiles);
+
+// Same for LHS matchers, RHS callback version of transform
+template void X::transform<StatementMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, StatementMatcher &matcher, XCallback &cb);
+template void X::transform<DeclarationMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, DeclarationMatcher &matcher, XCallback &cb);
+template void X::transform<TypeMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, TypeMatcher &matcher, XCallback &cb);
+template void X::transform<TypeLocMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, TypeLocMatcher &matcher, XCallback &cb);
+template void X::transform<NestedNameSpecifierMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierMatcher &matcher, XCallback &cb);
+template void X::transform<NestedNameSpecifierLocMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierLocMatcher &matcher, XCallback &cb);
+template void X::transform<CXXCtorInitializerMatcher>(const std::vector<std::string> &sourceFiles, const CompilationDatabase &compilations, CXXCtorInitializerMatcher &matcher, XCallback &cb);
