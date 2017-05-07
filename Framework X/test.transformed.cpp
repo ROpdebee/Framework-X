@@ -13,14 +13,12 @@ int main() {
 if (someFunction()) {
         // Replaced!
 if (someOtherFunction()) {
-            return 1;
+            return 0x1;
         } else return 2;
     } else // Replaced!
 if (someOtherFunction()) {
         return 3;
-    } else {
-        return 4;
-    }
+    } else return 4;
     
     return 0;
 }

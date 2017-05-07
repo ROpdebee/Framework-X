@@ -130,7 +130,7 @@ LHSConfiguration::LHSConfiguration(string jsonCfgPath) {
     // but std::map does not support iterating a specific order, and a sorted vector has
     // bad memory efficiency
     std::sort(metavariableRanges.begin(), metavariableRanges.end(),
-              [] (MetavarLoc m1, MetavarLoc m2) { return m1.range.begin <= m2.range.begin; });
+              [] (MetavarLoc m1, MetavarLoc m2) { return m1.range <= m2.range; });
     
     // Finally, check the range constraints.
     // Our JSON schema cannot handle this, hence we need to do it manually

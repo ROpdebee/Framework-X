@@ -1,15 +1,19 @@
 {
-	"templateSource": "test.cpp",
-	"templateRange": [[12, 0], [14, 10]],
-	"metaVariables": [
-		{
-			"identifier": "x",
-			"range": [[12, 0], [14, 1]]
-		},
-		{
-			"identifier": "y",
-			"range": [[14, 2], [14, 10]]
-		}
-	],
-	"rhsTemplate": "templ.tmpl"
+    "templateSource": "test.cpp",
+    "templateRange": [[12, 5], [18, 19]],
+    "metaVariables": [
+        {
+            "identifier": "condition",
+            "range": [[12, 9], [12, 22]]
+        },
+        {
+            "identifier": "body",
+            "range": [[12, 33], [16, 5]]
+        },
+        {
+            "identifier": "alt",
+            "range": [[16, 12], [18, 19]]
+        }
+    ],
+    "rhsTemplate": "templ.tmpl"
 }

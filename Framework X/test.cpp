@@ -11,13 +11,11 @@ bool someOtherFunction() {
 int main() {
     if (someFunction() == true) {
         if (someOtherFunction() != false) {
-            return 1;
+            return 0x1;
         } else return 2;
     } else if (someOtherFunction() == true) {
         return 3;
-    } else {
-        return 4;
-    }
+    } else return 4;
     
     return 0;
 }

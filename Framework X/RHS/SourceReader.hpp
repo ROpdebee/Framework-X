@@ -28,13 +28,13 @@ class SourceReader {
     SourceManager &_sm;
     
     /// Language options
-    LangOptions &_lops;
+    const LangOptions &_lops;
 public:
     
     /// Construct a source reader
     /// \param sm The global source manager
     /// \param lops Language options
-    SourceReader(SourceManager &sm, LangOptions &lops) : _sm(sm), _lops(lops) {}
+    SourceReader(SourceManager &sm, const LangOptions &lops) : _sm(sm), _lops(lops) {}
     
     /// \brief Read a source range from a file, given a source range and a source manager.
     ///

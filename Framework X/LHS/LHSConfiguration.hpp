@@ -19,6 +19,7 @@
 #include <llvm/Support/Path.h>
 #include <llvm/ADT/SmallVector.h>
 #include <clang/Basic/VirtualFileSystem.h>
+#include <clang/Basic/SourceManager.h>
 
 #include <json.hpp>
 #include <json-schema.hpp>
@@ -75,6 +76,10 @@ public:
     
     inline static TemplateLocation dummy() { return TemplateLocation(-1, 0); }
     inline bool isDummy() { return line == -1; }
+    
+    inline static TemplateLocation fromSourceLocation(clang::SourceLocation sl, clang::SourceManager &sm) {
+        return TemplateLocation(sm.getSpellingLineNumber(sl), sm.getSpellingColumnNumber(sl));
+    }
 };
 
 /// \class TemplateRange
@@ -90,7 +95,7 @@ public:
     
     /// Check if a source range is valid.
     /// A source range is valid if the end location is greater than ("behind") the starting location
-    inline bool valid() {
+    inline bool valid() const {
         return begin <= end;
     }
     
@@ -99,13 +104,41 @@ public:
     /// i.e. the starting point of this range is lesser than that of the argument range
     /// Following this assumption, we only need to check that the start of the argument range
     /// does not precede the end of this range
-    inline bool overlapsWith(const TemplateRange &other) {
+    inline bool overlapsWith(const TemplateRange &other) const {
         return end >= other.begin;
     }
     
     /// Check if this range is enclosed in the argument range
-    inline bool enclosedIn(const TemplateRange &outerRange) {
+    inline bool enclosedIn(const TemplateRange &outerRange) const {
         return outerRange.begin <= begin && outerRange.end >= end;
+    }
+    
+    inline bool operator==(const TemplateRange &tr) const {
+        return begin == tr.begin && end == tr.end;
+    }
+    
+    inline bool operator!=(const TemplateRange &tr) const {
+        return !(*this == tr);
+    }
+    
+    /// range1 <= range2 if range1.begin <= range2.begin
+    inline bool operator<=(const TemplateRange &tr) const {
+        return begin <= tr.begin;
+    }
+    
+    /// range1 < range2 if range1.begin < range2.begin
+    inline bool operator<(const TemplateRange &tr) const {
+        return begin < tr.begin;
+    }
+    
+    /// range1 >= range2 if range1.begin >= range2.begin
+    inline bool operator>=(const TemplateRange &tr) const {
+        return begin >= tr.begin;
+    }
+    
+    /// range1 > range2 if range1.begin > range2.begin
+    inline bool operator>(const TemplateRange &tr) const {
+        return begin > tr.begin;
     }
 };
     

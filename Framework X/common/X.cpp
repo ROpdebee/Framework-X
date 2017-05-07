@@ -119,38 +119,46 @@ void X::transform(SourceList sourceFiles, const CompilationDatabase &compilation
     }
     
     // Parse to ASTs
-    ASTList ASTs;
-    buildASTs(sourceFiles, compilations, ASTs);
-    
-    // Convert the AST list from unique_ptrs to shared_ptrs as one of the ASTs (the template source)
+    // Parse the ASTs and convert the AST list from unique_ptrs to shared_ptrs as one of the ASTs (the template source)
     // may need to be shared across the AST consumer and the LHS template
     // It might be more efficient to not convert the smart pointers in case the AST does not need to be shared,
     // but that incurs more overhead for allowing multiple possible types, forcing us to use even more (C++) templates
     // While doing this, also verify that the template source was parsed correctly and save the pointer for later usage.
-    vector<shared_ptr<ASTUnit>> sharedASTs;
+    vector<shared_ptr<ASTUnit>> ASTs;
     shared_ptr<ASTUnit> templateSourceAST;
     bool templateSourceParsed = false;
-    for (auto &AST : ASTs) {
-        shared_ptr<ASTUnit> sharedAST(move(AST));
-        
-        if (sharedAST->getMainFileName() == lhsConfig.getTemplateSource()) {
-            templateSourceParsed = true;
-            templateSourceAST = sharedAST;
-            
-            // If we don't want to transform the template, don't add it now
-            if (!lhsConfig.shouldTransformTemplateSource()) continue;
-        }
-        
-        sharedASTs.push_back(sharedAST);
-    }
     
-    // Clear the original AST list, the unique_ptrs are all null
-    ASTs.clear();
+    // Use a new scope so we don't confuse the shared and unique pointer AST lists
+    {
+        ASTList UniqueASTs;
+        buildASTs(sourceFiles, compilations, UniqueASTs);
+        
+        for (auto &uniqueAST : UniqueASTs) {
+            shared_ptr<ASTUnit> sharedAST(move(uniqueAST));
+            
+            if (sharedAST->getMainFileName() == lhsConfig.getTemplateSource()) {
+                templateSourceParsed = true;
+                templateSourceAST = sharedAST;
+                
+                // If we don't want to transform the template, don't add it now
+                if (!lhsConfig.shouldTransformTemplateSource()) continue;
+            }
+            
+            ASTs.push_back(sharedAST);
+        }
+    }
     
     if (!templateSourceParsed) {
         llvm::errs() << "Template source file failed to parse\n";
         return;
     }
+    
+    LHSParserConsumer consumer(lhsConfig);
+    consumer.HandleTranslationUnit(templateSourceAST->getASTContext());
+    
+    /*RHSTemplate rhs(lhsConfig.getRHSTemplate());
+    InternalCallback cb(rhs, false);
+    consumeASTs(ASTs, llvm::make_unique<LHSParserConsumer>(lhsConfig), cb);*/
 }
 
 

@@ -22,6 +22,7 @@
 
 #include "../RHS/RHSTemplate.hpp"
 #include "../LHS/LHSConfiguration.hpp"
+#include "../LHS/LHSTemplateParser.hpp"
 
 using namespace clang;
 using namespace clang::ast_matchers;
