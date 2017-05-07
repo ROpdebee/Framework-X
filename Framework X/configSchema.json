@@ -1,13 +1,23 @@
 {
 	"definitions": {
+        "location": {
+            "type": "array",
+            "items": {
+                "type": "integer",
+                "minimum": 0
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "A source location, made up of a line number and a column number"
+        },
 		"range": {
 			"type": "array",
 			"items": {
-				"type": "integer",
-				"minimum": 0
+				"$ref": "#/definitions/location"
 			},
 			"minItems": 2,
-			"maxItems": 2
+			"maxItems": 2,
+            "description": "A source range, made up of a start location and an end location"
 		}
 	},
 

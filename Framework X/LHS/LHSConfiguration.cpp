@@ -10,27 +10,6 @@
 
 using namespace X;
 
-/// Check if a source range is valid.
-/// A source range is valid if the end location is greater than ("behind") the starting location
-/// The JSON library returns these ranges as vectors, hence we don't use pairs
-static bool isSourceRangeValid(const TemplateRange &rng) {
-    return rng.begin <= rng.end;
-}
-
-/// Check if the inner range is enclosed in the outer range
-static bool isEnclosedInRange(const TemplateRange &innerRange, const TemplateRange &outerRange) {
-    return outerRange.begin <= innerRange.begin && outerRange.end >= innerRange.end;
-}
-
-/// Check if ranges overlap
-/// It is assumed that ranges are passed in ascending order,
-/// i.e. the starting point of rng1 < that of rng2
-/// Following this assumption, we only need to check that the start of rng2
-/// does not precede the end of rng1
-static bool areOverlappingRanges(const TemplateRange &rng1, const TemplateRange &rng2) {
-    return rng1.end < rng2.begin;
-}
-
 /// Check constraints on source ranges in the config file
 /// We require that all ranges are well-formed (end-point <= start-point),
 /// metavariable ranges are inside the template range,
@@ -39,22 +18,22 @@ static bool areOverlappingRanges(const TemplateRange &rng1, const TemplateRange 
 static void validateRangeConstraints(TemplateRange &templateRange, vector<MetavarLoc> &metavars) {
     
     // Check if the main template range is valid
-    if (!isSourceRangeValid(templateRange))
+    if (!templateRange.valid())
         throw MalformedConfigException("Invalid template range!");
     
     // Check metavariables, use chasing pointers
     MetavarLoc prevMetavar;
     for (MetavarLoc meta : metavars) {
         
-        if (!isSourceRangeValid(meta.range))
+        if (!meta.range.valid())
             throw MalformedConfigException("Invalid source range for metavariable " + meta.identifier);
         
-        if (!isEnclosedInRange(meta.range, templateRange))
+        if (!meta.range.enclosedIn(templateRange))
             throw MalformedConfigException("Source range for metavariable " + meta.identifier + " falls outside template range");
         
         // Since we know the range of prevMetavar starts before the range of this metavariable,
         // we do not need to check against any other range
-        if (prevMetavar.isValid() && !areOverlappingRanges(prevMetavar.range, meta.range))
+        if (prevMetavar.isValid() && prevMetavar.range.overlapsWith(meta.range))
             throw MalformedConfigException("Source ranges for metavariables " + prevMetavar.identifier + " and " + meta.identifier + " overlap");
         
         prevMetavar = meta;
@@ -159,9 +138,12 @@ LHSConfiguration::LHSConfiguration(string jsonCfgPath) {
     validateRangeConstraints(templateRange, metavariableRanges);
 }
 
-ostream& operator<< (ostream & out, TemplateRange const& tr) {
-    out << "[" << tr.begin << ", " << tr.end << "]";
-    return out;
+inline ostream& operator<<(ostream &out, TemplateLocation const &loc) {
+    return out << "[" << loc.line << ", " << loc.column << "]";
+}
+
+inline ostream& operator<<(ostream &out, TemplateRange const &tr) {
+    return out << tr.begin << " -> " << tr.end;
 }
 
 void LHSConfiguration::dumpConfiguration() {

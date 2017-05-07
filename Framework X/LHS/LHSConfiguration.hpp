@@ -40,15 +40,85 @@ public:
     MalformedConfigException(const string message) : runtime_error(message) {};
     // inherit the what() method, let runtime_error handle this
 };
+    
+/// \class TemplateLocation
+/// \brief Representation of template source locations
+class TemplateLocation {
+public:
+    int line, column;
+    TemplateLocation() : line(0), column(0) {}
+    TemplateLocation(int l, int c) : line(l), column(c) {}
+    
+    inline bool operator==(const TemplateLocation &l) const {
+        return line == l.line && column == l.column;
+    }
+    
+    inline bool operator<=(const TemplateLocation &l) const {
+        return line < l.line || (line == l.line && column <= l.column);
+    }
+    
+    inline bool operator!=(const TemplateLocation &l) const {
+        return !(*this == l);
+    }
+    
+    inline bool operator<(const TemplateLocation &l) const {
+        return *this <= l && *this != l;
+    }
+    
+    inline bool operator>=(const TemplateLocation &l) const {
+        return !(*this < l);
+    }
+    
+    inline bool operator>(const TemplateLocation &l) const {
+        return !(*this <= l);
+    }
+    
+    inline static TemplateLocation dummy() { return TemplateLocation(-1, 0); }
+    inline bool isDummy() { return line == -1; }
+};
 
 /// \class TemplateRange
 /// \brief Representation of template source ranges
 class TemplateRange {
 public:
-    int begin, end;
-    TemplateRange(int b, int e) : begin(b), end(e) {}
-    TemplateRange() : begin(0), end(0) {}
+    TemplateLocation begin, end;
+    TemplateRange(TemplateLocation b, TemplateLocation e) : begin(b), end(e) {}
+    TemplateRange() : begin(), end() {}
+    
+    inline static TemplateRange dummy() { return { TemplateLocation::dummy(), TemplateLocation::dummy() }; }
+    inline bool isDummy() { return begin.isDummy(); }
+    
+    /// Check if a source range is valid.
+    /// A source range is valid if the end location is greater than ("behind") the starting location
+    inline bool valid() {
+        return begin <= end;
+    }
+    
+    /// Check if this range and the argument range overlap
+    /// It is assumed that ranges are passed in ascending order,
+    /// i.e. the starting point of this range is lesser than that of the argument range
+    /// Following this assumption, we only need to check that the start of the argument range
+    /// does not precede the end of this range
+    inline bool overlapsWith(const TemplateRange &other) {
+        return end >= other.begin;
+    }
+    
+    /// Check if this range is enclosed in the argument range
+    inline bool enclosedIn(const TemplateRange &outerRange) {
+        return outerRange.begin <= begin && outerRange.end >= end;
+    }
 };
+    
+// Custom JSON conversion to TemplateLocations and TemplateRanges
+inline void from_json(const json &j, TemplateLocation &loc) {
+    loc.line = j[0];
+    loc.column = j[1];
+}
+
+inline void from_json(const json &j, TemplateRange &range) {
+    range.begin = j[0];
+    range.end = j[1];
+}
     
 /// \class MetavarLoc
 /// \brief A metavariable identifier and its associated template range
@@ -58,9 +128,9 @@ public:
     string identifier;
     
     MetavarLoc(string ident, TemplateRange rng) : range(rng), identifier(ident) {};
-    MetavarLoc() : range(-1, 0) {};
+    MetavarLoc() : range(TemplateRange::dummy()) {};
     
-    bool isValid() { return range.begin != -1; }
+    bool isValid() { return !range.isDummy(); }
 };
 
 /// \class LHSConfiguration

@@ -1,14 +1,14 @@
 {
 	"templateSource": "test.cpp",
-	"templateRange": [12, 38],
+	"templateRange": [[12, 0], [14, 10]],
 	"metaVariables": [
 		{
 			"identifier": "x",
-			"range": [12, 14]
+			"range": [[12, 0], [14, 1]]
 		},
 		{
 			"identifier": "y",
-			"range": [36, 38]
+			"range": [[14, 2], [14, 10]]
 		}
 	],
 	"rhsTemplate": "templ.tmpl"
