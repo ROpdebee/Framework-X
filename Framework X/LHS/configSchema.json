@@ -1,4 +1,4 @@
-{
+R"|({
 	"definitions": {
         "location": {
             "type": "array",
@@ -55,4 +55,4 @@
         }
 	},
 	"required": ["templateSource", "templateRange", "metaVariables", "rhsTemplate"]
-}
+})|"

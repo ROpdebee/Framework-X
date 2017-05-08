@@ -76,8 +76,7 @@ using SubtreeQueue = queue<StmtOrDecl>;
 /// \brief An LHS template parser implementing the RecursiveASTVisitor class in order to visit all AST nodes of the template source
 class LHSParserVisitor : public RecursiveASTVisitor<LHSParserVisitor> {
 public:
-    LHSParserVisitor(ASTContext &ctx, LHSConfiguration &cfg) : _ctx(ctx), _sm(ctx.getSourceManager()), _cfg(cfg),
-    _templateSourceRange(cfg.getTemplateRange()) {
+    LHSParserVisitor(ASTContext &ctx, LHSConfiguration &cfg) : _sm(ctx.getSourceManager()), _templateSourceRange(cfg.getTemplateRange()) {
         auto metavars(cfg.getMetavariableRanges());
         remainingMetavariables = set<MetavarLoc>(metavars.begin(), metavars.end());
     }
@@ -92,9 +91,7 @@ public:
     // They CAN be included in templates, they get matched within a declaration
     
 private:
-    ASTContext &_ctx; ///< AST context of the current translation unit
     SourceManager &_sm;
-    LHSConfiguration &_cfg;
     const TemplateRange &_templateSourceRange;
     
     //

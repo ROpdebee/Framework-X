@@ -10,6 +10,10 @@
 
 using namespace X;
 
+static istringstream schemaStream(
+#include "configSchema.json"
+);
+
 /// Check constraints on source ranges in the config file
 /// We require that all ranges are well-formed (end-point <= start-point),
 /// metavariable ranges are inside the template range,
@@ -46,13 +50,12 @@ static json parseAndValidate(string configPath) {
     
     json schema;
     json config;
-    ifstream fSchema(schemaPath);
     ifstream fConfig(configPath);
     json_validator validator(nullptr, nullptr);
     
     // Parse the JSON schema and instantiate the validator
     try {
-        fSchema >> schema;
+        schema = json::parse(schemaStream);
         validator.set_root_schema(schema);
     } catch (const exception &e) {
         cerr << "Unable to instantiate schema validator: " << e.what() << endl;
