@@ -55,15 +55,14 @@ using namespace X;
 //
 // This applies to metavariables as well
 
-template <class DeclOrStmt>
-bool LHSParserVisitor::matchSubtreeToRange(DeclOrStmt *subtree, const TemplateRange &range) {
+bool LHSParserVisitor::matchSubtreeToRange(StmtOrDecl subtree, const TemplateRange &range) {
     
     // Ignore statements in included files, carry on with the next AST subtree
-    if (!_sm.isWrittenInMainFile(subtree->getLocStart())) return true;
+    if (!_sm.isWrittenInMainFile(subtree.getLocStart())) return true;
     
     // The start and end location of the node, as written in the file before preprocessing
-    TemplateLocation locStart(TemplateLocation::fromSourceLocation(subtree->getLocStart(), _sm));
-    TemplateLocation locEnd(TemplateLocation::fromSourceLocation(subtree->getLocEnd(), _sm));
+    TemplateLocation locStart(TemplateLocation::fromSourceLocation(subtree.getLocStart(), _sm));
+    TemplateLocation locEnd(TemplateLocation::fromSourceLocation(subtree.getLocEnd(), _sm));
     TemplateRange sourceRange(locStart, locEnd);
     
     // If the template range of this node comes after the range of this subtree,
@@ -107,7 +106,7 @@ bool LHSParserVisitor::matchSubtreeToRange(DeclOrStmt *subtree, const TemplateRa
         }
         
         // We're now definitely part of the template, so we add ourselves to the node queue
-        templateSubtrees.push(DynTypedNode::create<DeclOrStmt>(*subtree));
+        templateSubtrees.push(subtree);
         
         // If our end is also the end of the template, we'll end the template here
         // Also end the traversal, so we'll continue on to match metavariables
@@ -157,14 +156,9 @@ bool LHSParserVisitor::matchSubtreeToRange(DeclOrStmt *subtree, const TemplateRa
     return continueTraversal(subtree);
 }
 
-template<>
-bool LHSParserVisitor::continueTraversal<Decl>(Decl *subtree) {
-    return RecursiveASTVisitor<LHSParserVisitor>::TraverseDecl(subtree);
-}
-
-template<>
-bool LHSParserVisitor::continueTraversal<Stmt>(Stmt *subtree) {
-    return RecursiveASTVisitor<LHSParserVisitor>::TraverseStmt(subtree);
+bool LHSParserVisitor::continueTraversal(StmtOrDecl subtree) {
+    if (subtree.getKind() == StmtOrDecl::Kind::DECL) return RecursiveASTVisitor<LHSParserVisitor>::TraverseDecl(subtree.getAsDecl());
+    else return RecursiveASTVisitor<LHSParserVisitor>::TraverseStmt(subtree.getAsStmt());
 }
 
 bool LHSParserVisitor::TraverseStmt(Stmt *S) {

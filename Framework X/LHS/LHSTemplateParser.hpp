@@ -10,6 +10,7 @@
 #define LHSTemplateParser_hpp
 
 #include <queue>
+#include <vector>
 #include <memory>
 
 #include <clang/AST/RecursiveASTVisitor.h>
@@ -23,13 +24,53 @@ using namespace clang::ast_type_traits;
 using namespace std;
 
 namespace X {
+
+/// \class StmtOrDecl
+/// \brief A small encapsulation class that can contain both Stmts and Decls
+/// The motivation behind this is that we need some way to support and save multiple
+/// node kinds. DynTypedNode does not work for us in this case, as it returns its
+/// storage as a const value and this doesn't get accepted by the visitor (it needs
+/// non-const nodes). Instead of using const_cast (which may result in undefined behaviour),
+/// we roll our own generic container.
+class StmtOrDecl {
+public:
+    enum Kind { STMT, DECL };
     
+    StmtOrDecl(Stmt *stmt) : _kind(STMT) { _node = stmt; }
+    StmtOrDecl(Decl *decl) : _kind(DECL) { _node = decl; }
+    StmtOrDecl() {}
+    
+    inline Kind getKind() const { return _kind; }
+    
+    inline Stmt *getAsStmt() const {
+        if (_kind == STMT) return static_cast<Stmt *>(_node);
+        else throw runtime_error("Retrieving a Decl as a Stmt");
+    }
+    
+    inline Decl *getAsDecl() const {
+        if (_kind == DECL) return static_cast<Decl *>(_node);
+        else throw runtime_error("Retrieving a Stmt as a Decl");
+    }
+    
+    inline SourceLocation getLocStart() {
+        if (_kind == DECL) return getAsDecl()->getLocStart();
+        else return getAsStmt()->getLocStart();
+    }
+    inline SourceLocation getLocEnd() {
+        if (_kind == DECL) return getAsDecl()->getLocEnd();
+        else return getAsStmt()->getLocEnd(); }
+    
+private:
+    void *_node; ///< The Stmt or Decl node
+    Kind _kind; ///< The kind of node contained
+};
+
 /// \class LHSParserVisitor
 /// \brief An LHS template parser implementing the RecursiveASTVisitor class in order to visit all AST nodes of the template source
 class LHSParserVisitor : public RecursiveASTVisitor<LHSParserVisitor> {
 public:
     LHSParserVisitor(ASTContext &ctx, LHSConfiguration &cfg) : _ctx(ctx), _sm(ctx.getSourceManager()), _cfg(cfg),
-        _templateSourceRange(cfg.getTemplateRange()) {}
+        _templateSourceRange(cfg.getTemplateRange()), remainingMetavariables(cfg.getMetavariableRanges()) {}
     
     // Override the Traverse* methods for the base AST nodes
     // Use Traverse* instead of Visit* so we can control the AST traversal,
@@ -60,17 +101,18 @@ private:
     bool templateConstructionBegan = false;
     
     /// A queue of subtrees that need to be searched for template metavariables
-    queue<DynTypedNode> templateSubtrees;
+    queue<StmtOrDecl> templateSubtrees;
+    
+    /// The set of metavariables that still need to be parsed
+    vector<MetavarLoc> remainingMetavariables;
     
     /// \brief Method to generally match a subtree (being either a Stmt or a Decl) to a source range.
     /// \return Boolean indicating if the passed subtree should be traversed further down
-    template <class DeclOrStmt>
-    bool matchSubtreeToRange(DeclOrStmt *subtree, const TemplateRange &range);
+    bool matchSubtreeToRange(StmtOrDecl subtree, const TemplateRange &range);
     
     /// \brief Continue traversal on a subtree
     /// \return The result of the traversal
-    template <class DeclOrStmt>
-    bool continueTraversal(DeclOrStmt *subtree);
+    bool continueTraversal(StmtOrDecl subtree);
     
     ~LHSParserVisitor() {} // Suppress warnings about non-virtual destructor
     
@@ -98,10 +140,25 @@ public:
         
         // Make a new visitor for each translation unit, as it needs the new context
         LHSParserVisitor visitor(ctx, _cfg);
+        
+        // This will parse the template
         visitor.TraverseDecl(ctx.getTranslationUnitDecl());
         
+        // When we're done parsing the template, continue with parsing the metavariables
+        if (!visitor.templateParsed) {
+            throw MalformedConfigException("No template was parsed");
+        }
+        
+        StmtOrDecl node;
         while (!visitor.templateSubtrees.empty()) {
-            visitor.templateSubtrees.front().dump(llvm::outs(), sm);
+            
+            node = visitor.templateSubtrees.front();
+            if (node.getKind() == StmtOrDecl::Kind::DECL) {
+                node.getAsDecl()->dump();
+            } else {
+                node.getAsStmt()->dump();
+            }
+            
             visitor.templateSubtrees.pop();
         }
     }
