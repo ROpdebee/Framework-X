@@ -55,7 +55,7 @@ using namespace X;
 //
 // This applies to metavariables as well
 
-bool LHSParserVisitor::matchSubtreeToRange(StmtOrDecl subtree, const TemplateRange &range) {
+bool LHSParserVisitor::parseSubtreeToTemplate(StmtOrDecl subtree) {
     
     // Ignore statements in included files, carry on with the next AST subtree
     if (!_sm.isWrittenInMainFile(subtree.getLocStart())) return true;
@@ -87,7 +87,10 @@ bool LHSParserVisitor::matchSubtreeToRange(StmtOrDecl subtree, const TemplateRan
     // that will be done further down
     //  Template:   [.............]
     //  Subtree:    [....]
-    if (sourceRange.begin == _templateSourceRange.begin) {
+    //
+    // If the template range does not reach until the end of this source range, don't try to parse it,
+    // but also don't raise an exception. One of our children may start at the same source location as us
+    if (sourceRange.begin == _templateSourceRange.begin && sourceRange.end <= _templateSourceRange.end) {
         templateConstructionBegan = true;
     }
     
@@ -109,7 +112,7 @@ bool LHSParserVisitor::matchSubtreeToRange(StmtOrDecl subtree, const TemplateRan
         templateSubtrees.push(subtree);
         
         // If our end is also the end of the template, we'll end the template here
-        // Also end the traversal, so we'll continue on to match metavariables
+        // Also end the traversal, so we'll continue on to parse metavariables
         //  Template: [...........]
         //  Subtree:        [.....]
         if (sourceRange.end == _templateSourceRange.end) {
@@ -141,6 +144,11 @@ bool LHSParserVisitor::matchSubtreeToRange(StmtOrDecl subtree, const TemplateRan
     // ~~~~~~~
     //  Template:   [.............]     Already handled earlier
     //  Subtree:    [.....]
+    //
+    // Case 5:
+    // ~~~~~~~
+    //  Template:   [........]          Template spans us partially, but may span a subtree completely
+    //  Subtree:    [.............]
     
     // Case 2:
     if (_templateSourceRange.begin < sourceRange.begin) {
@@ -152,8 +160,74 @@ bool LHSParserVisitor::matchSubtreeToRange(StmtOrDecl subtree, const TemplateRan
         throw MalformedConfigException("Template will partially span a subtree");
     }
     
-    // Case 1: Simply descend into the subtree and carry on matching
+    // Case 1, case 5: Simply descend into the subtree and carry on parsing
     return continueTraversal(subtree);
+}
+
+bool LHSParserVisitor::parseMetavariables(StmtOrDecl subtree) {
+    
+    // The start and end location of the subtree, as written in the file before preprocessing
+    TemplateLocation locStart(TemplateLocation::fromSourceLocation(subtree.getLocStart(), _sm));
+    TemplateLocation locEnd(TemplateLocation::fromSourceLocation(subtree.getLocEnd(), _sm));
+    TemplateRange sourceRange(locStart, locEnd);
+    
+    // Check all remaining metavariables' ranges to check if this subtree is of importance
+    // Keep in mind that metavariable ranges can never overlap, simplifying our task
+    bool searchSubtrees(false);
+    for (auto &metavar : remainingMetavariables) {
+        if (!metavar.range.overlapsWith(sourceRange)) continue; // Current metavariable is not a part of this subtree
+        
+        // When we start a metavariable, do the necessary bookkeeping
+        // Make sure we don't start on metavariables we can't finish, see the template matching above
+        if (metavar.range.begin == sourceRange.begin && sourceRange.end <= metavar.range.end) {
+            parsingMetavariable = &metavar;
+            parsedMetavariables.insert({ metavar.identifier, SubtreeList() });
+            // Do not insert the subtree just yet, it will be done further down
+            break; // No need to check the rest of the metavariables, they cannot overlap
+        }
+        
+        // When at least one of our subtrees contains a metavariable, mark it as such
+        // If it is not fully enclosed in our subtree, i.e. "a part sticks out",
+        // it might partially span a subtree. Don't check for this, the metavar will simply never
+        // get parsed or an exception will be thrown elsewhere
+        if (metavar.range.enclosedIn(sourceRange)) {
+            searchSubtrees = true;
+            break;
+        }
+    }
+    
+    // When we're in the process of parsing a metavariable, inspect this subtree
+    // to see if it can be added to its subtree sequence without creating partially spanned subtrees
+    // Very similar to template matching
+    if (parsingMetavariable) {
+        
+        //  Metavar:   [.............]
+        //  Subtree:              [......]
+        if (sourceRange.end > parsingMetavariable->range.end) {
+            throw MalformedConfigException("Metavariable only partially spans a subtree");
+        }
+        
+        // We're definitely part of the metavariable's subtree sequence, so we add ourselves to it
+        parsedMetavariables[parsingMetavariable->identifier].push_back(subtree);
+        
+        // If we're the end of the metavariable's subtree sequence, mark this metavariable as done
+        if (sourceRange.end == parsingMetavariable->range.end) {
+            remainingMetavariables.erase(*parsingMetavariable);
+            parsingMetavariable = nullptr;
+        }
+        
+        // Don't descend further down the subtree, we disallow partial subtrees
+        // Continue parsing
+        return true;
+    }
+    
+    // We're currently not parsing a metavariable, but there may be metavariables in one of our children
+    if (searchSubtrees) {
+        return continueTraversal(subtree);
+    }
+    
+    // If there is no metavariable in our children, don't search them
+    return true;
 }
 
 bool LHSParserVisitor::continueTraversal(StmtOrDecl subtree) {
@@ -163,16 +237,21 @@ bool LHSParserVisitor::continueTraversal(StmtOrDecl subtree) {
 
 bool LHSParserVisitor::TraverseStmt(Stmt *S) {
     if (!S) return true; // Ignore empty nodes
-    return matchSubtreeToRange(S, _templateSourceRange);
+    
+    // Parse the template or the metavariables
+    if (!templateParsed) return parseSubtreeToTemplate(S);
+    else return parseMetavariables(S);
 }
 
 bool LHSParserVisitor::TraverseDecl(Decl *D) {
     
     if (!D) return true; // Empty node, continue search
     
-    // If we just started a translation unit, don't try to match anything as a declaration unit doesn't have
+    // If we just started a translation unit, don't try to parse anything as a declaration unit doesn't have
     // a valid source location. Just start the traversal
     if (D->getKind() == Decl::TranslationUnit) return RecursiveASTVisitor<LHSParserVisitor>::TraverseDecl(D);
     
-    return matchSubtreeToRange(D, _templateSourceRange);
+    // Parse the template or the metavariables
+    if (!templateParsed) return parseSubtreeToTemplate(D);
+    else return parseMetavariables(D);
 }

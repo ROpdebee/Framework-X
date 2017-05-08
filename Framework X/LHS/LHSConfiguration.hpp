@@ -75,7 +75,7 @@ public:
     }
     
     inline static TemplateLocation dummy() { return TemplateLocation(-1, 0); }
-    inline bool isDummy() { return line == -1; }
+    inline bool isDummy() const { return line == -1; }
     
     inline static TemplateLocation fromSourceLocation(clang::SourceLocation sl, clang::SourceManager &sm) {
         return TemplateLocation(sm.getSpellingLineNumber(sl), sm.getSpellingColumnNumber(sl));
@@ -91,7 +91,7 @@ public:
     TemplateRange() : begin(), end() {}
     
     inline static TemplateRange dummy() { return { TemplateLocation::dummy(), TemplateLocation::dummy() }; }
-    inline bool isDummy() { return begin.isDummy(); }
+    inline bool isDummy() const { return begin.isDummy(); }
     
     /// Check if a source range is valid.
     /// A source range is valid if the end location is greater than ("behind") the starting location
@@ -163,7 +163,9 @@ public:
     MetavarLoc(string ident, TemplateRange rng) : range(rng), identifier(ident) {};
     MetavarLoc() : range(TemplateRange::dummy()) {};
     
-    bool isValid() { return !range.isDummy(); }
+    inline bool isValid() const { return !range.isDummy(); }
+    
+    inline bool operator<(const MetavarLoc &other) const { return identifier < other.identifier; }
 };
 
 /// \class LHSConfiguration

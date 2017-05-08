@@ -11,6 +11,8 @@
 
 #include <queue>
 #include <vector>
+#include <map>
+#include <set>
 #include <memory>
 
 #include <clang/AST/RecursiveASTVisitor.h>
@@ -39,6 +41,7 @@ public:
     StmtOrDecl(Stmt *stmt) : _kind(STMT) { _node = stmt; }
     StmtOrDecl(Decl *decl) : _kind(DECL) { _node = decl; }
     StmtOrDecl() {}
+    StmtOrDecl(StmtOrDecl const &other) : _kind(other._kind) { _node = other._node; }
     
     inline Kind getKind() const { return _kind; }
     
@@ -64,13 +67,20 @@ private:
     void *_node; ///< The Stmt or Decl node
     Kind _kind; ///< The kind of node contained
 };
+    
+using SubtreeList = vector<StmtOrDecl>;
+using SubtreeQueue = queue<StmtOrDecl>;
+    
 
 /// \class LHSParserVisitor
 /// \brief An LHS template parser implementing the RecursiveASTVisitor class in order to visit all AST nodes of the template source
 class LHSParserVisitor : public RecursiveASTVisitor<LHSParserVisitor> {
 public:
     LHSParserVisitor(ASTContext &ctx, LHSConfiguration &cfg) : _ctx(ctx), _sm(ctx.getSourceManager()), _cfg(cfg),
-        _templateSourceRange(cfg.getTemplateRange()), remainingMetavariables(cfg.getMetavariableRanges()) {}
+    _templateSourceRange(cfg.getTemplateRange()) {
+        auto metavars(cfg.getMetavariableRanges());
+        remainingMetavariables = set<MetavarLoc>(metavars.begin(), metavars.end());
+    }
     
     // Override the Traverse* methods for the base AST nodes
     // Use Traverse* instead of Visit* so we can control the AST traversal,
@@ -101,14 +111,28 @@ private:
     bool templateConstructionBegan = false;
     
     /// A queue of subtrees that need to be searched for template metavariables
-    queue<StmtOrDecl> templateSubtrees;
+    SubtreeQueue templateSubtrees;
     
     /// The set of metavariables that still need to be parsed
-    vector<MetavarLoc> remainingMetavariables;
+    set<MetavarLoc> remainingMetavariables;
     
-    /// \brief Method to generally match a subtree (being either a Stmt or a Decl) to a source range.
-    /// \return Boolean indicating if the passed subtree should be traversed further down
-    bool matchSubtreeToRange(StmtOrDecl subtree, const TemplateRange &range);
+    /// A mapping containing the metavariables that have been parsed
+    /// It maps from a metavariable identifier to a sequence of subtrees
+    /// that the metavariable represents
+    map<string, SubtreeList> parsedMetavariables;
+    
+    /// \brief Method to generally parse a subtree (being either a Stmt or a Decl) to a template.
+    /// \return Boolean indicating if the the template was parsed
+    bool parseSubtreeToTemplate(StmtOrDecl subtree);
+    
+    /// \brief Method to parse metavariables in a subtree
+    /// \return Boolean indicating if the traversal should continue
+    bool parseMetavariables(StmtOrDecl subtree);
+    
+    /// The current metavariable being parsed, or nullptr when no metavariable is being parsed
+    /// If this is set when entering a subtree, the subtree is being inspected to add to the sequence
+    /// of subtrees for this metavariable
+    const MetavarLoc *parsingMetavariable = nullptr;
     
     /// \brief Continue traversal on a subtree
     /// \return The result of the traversal
@@ -149,17 +173,40 @@ public:
             throw MalformedConfigException("No template was parsed");
         }
         
-        StmtOrDecl node;
+        // Traverse each subtree in the template for metavariables
+        StmtOrDecl subtree;
         while (!visitor.templateSubtrees.empty()) {
+            subtree = visitor.templateSubtrees.front();
             
-            node = visitor.templateSubtrees.front();
-            if (node.getKind() == StmtOrDecl::Kind::DECL) {
-                node.getAsDecl()->dump();
+            if (subtree.getKind() == StmtOrDecl::Kind::DECL) {
+                subtree.getAsDecl()->dump();
+                visitor.TraverseDecl(subtree.getAsDecl());
             } else {
-                node.getAsStmt()->dump();
+                visitor.TraverseStmt(subtree.getAsStmt());
+                subtree.getAsStmt()->dump();
             }
             
             visitor.templateSubtrees.pop();
+        }
+        
+        // Make sure each metavariable is parsed
+        if (!visitor.remainingMetavariables.empty()) {
+            for (auto &meta : visitor.remainingMetavariables) {
+                llvm::errs() << "Failed to parse metavariable " << meta.identifier;
+            }
+            throw MalformedConfigException("Some metavariables could not be parsed");
+        }
+        
+        for (auto &meta : visitor.parsedMetavariables) {
+            llvm::outs() << "Metavariable " << meta.first << "\n";
+            for (auto &subtree : meta.second) {
+                if (subtree.getKind() == StmtOrDecl::Kind::DECL) {
+                    subtree.getAsDecl()->dump();
+                } else {
+                    subtree.getAsStmt()->dump();
+                }
+            }
+            llvm::outs() << "\n";
         }
     }
 };
