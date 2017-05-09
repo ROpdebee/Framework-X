@@ -59,7 +59,7 @@ add_definitions(-fno-rtti)
 include_directories(${LLVM_INCLUDE_DIR})
 link_directories(${LLVM_LIBDIR} 3rd/json-schema-validator/build)
 
-add_executable(framework-x main.cpp common/Lexer.cpp RHS/SourceReader.cpp common/X.cpp RHS/RHSTemplate.cpp LHS/LHSConfiguration.cpp LHS/LHSTemplateParser.cpp)
+add_executable(framework-x main.cpp common/Lexer.cpp RHS/SourceReader.cpp common/X.cpp RHS/RHSTemplate.cpp LHS/LHSConfiguration.cpp LHS/LHSTemplateParser.cpp LHS/LHSTemplate.cpp)
 
 include_directories(SYSTEM 3rd/json 3rd/json-schema-validator/src)
 
