@@ -77,7 +77,7 @@ public:
     inline static TemplateLocation dummy() { return TemplateLocation(-1, 0); }
     inline bool isDummy() const { return line == -1; }
     
-    inline static TemplateLocation fromSourceLocation(clang::SourceLocation sl, clang::SourceManager &sm) {
+    inline static TemplateLocation fromSourceLocation(clang::SourceLocation sl, const clang::SourceManager &sm) {
         return TemplateLocation(sm.getSpellingLineNumber(sl), sm.getSpellingColumnNumber(sl));
     }
 };

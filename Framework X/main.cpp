@@ -11,7 +11,6 @@
 #include <clang/Tooling/CommonOptionsParser.h>
 
 #include "common/X.hpp"
-#include "LHS/LHSConfiguration.hpp"
 
 using namespace clang::ast_matchers;
 using namespace X;
@@ -33,9 +32,6 @@ int main(int argc, const char **argv) {
     //X::transform(op.getSourcePathList(), op.getCompilations(), mtchr, "templ.tmpl");
     
     X::transform(op.getSourcePathList(), op.getCompilations(), "config.json");
-    
-    //LHSConfiguration conf("config.json");
-    //conf.dumpConfiguration();
     
     return 0;
 }

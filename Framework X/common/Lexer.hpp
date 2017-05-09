@@ -52,6 +52,22 @@ public:
     /// \param tok This token will be destructively modified to contain the newly lexed token.
     /// \return True if the file still has tokens to read, false if the lexed token is the EOF token.
     bool lex(clang::Token &tok) const;
+    
+    /// \brief Return a source location for the semicolon immediately following a source location
+    /// \param sl The source location to search a semicolon after
+    /// \param sm The source manager managing this source location
+    /// \param lops Language options for the source file
+    /// \return The source location of the semicolon, or an invalid source location when there is no immediate semicolon
+    static SourceLocation getSemiAfterLocation(SourceLocation sl, const SourceManager &sm, const LangOptions &lops);
+    
+    /// \brief Return the very last source location of a literal value.
+    /// \param sl The beginning of the literal
+    /// \param sm The source manager managing this source location
+    /// \param lops Language options for the source file
+    /// \return The source location of the end of the literal value
+    /// This method is necessary as literal values often get collapsed into a compact representation
+    /// after lexing, e.g. true -> 1, 0b10 -> 2, ...
+    static SourceLocation getEndOfLiteral(SourceLocation sl, const SourceManager &sm, const LangOptions &lops);
 
 };
 

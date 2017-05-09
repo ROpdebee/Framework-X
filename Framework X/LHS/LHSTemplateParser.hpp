@@ -20,6 +20,7 @@
 #include <clang/AST/ASTTypeTraits.h>
 
 #include "LHSConfiguration.hpp"
+#include "../common/Lexer.hpp"
 
 using namespace clang;
 using namespace clang::ast_type_traits;
@@ -76,7 +77,7 @@ using SubtreeQueue = queue<StmtOrDecl>;
 /// \brief An LHS template parser implementing the RecursiveASTVisitor class in order to visit all AST nodes of the template source
 class LHSParserVisitor : public RecursiveASTVisitor<LHSParserVisitor> {
 public:
-    LHSParserVisitor(ASTContext &ctx, LHSConfiguration &cfg) : _sm(ctx.getSourceManager()), _templateSourceRange(cfg.getTemplateRange()) {
+    LHSParserVisitor(ASTContext &ctx, LHSConfiguration &cfg) : _sm(ctx.getSourceManager()), _lops(ctx.getLangOpts()), _templateSourceRange(cfg.getTemplateRange()) {
         auto metavars(cfg.getMetavariableRanges());
         remainingMetavariables = set<MetavarLoc>(metavars.begin(), metavars.end());
     }
@@ -91,7 +92,8 @@ public:
     // They CAN be included in templates, they get matched within a declaration
     
 private:
-    SourceManager &_sm;
+    const SourceManager &_sm;
+    const LangOptions &_lops;
     const TemplateRange &_templateSourceRange;
     
     //
@@ -189,7 +191,7 @@ public:
         // Make sure each metavariable is parsed
         if (!visitor.remainingMetavariables.empty()) {
             for (auto &meta : visitor.remainingMetavariables) {
-                llvm::errs() << "Failed to parse metavariable " << meta.identifier;
+                llvm::errs() << "Failed to parse metavariable " << meta.identifier << "\n";
             }
             throw MalformedConfigException("Some metavariables could not be parsed");
         }

@@ -63,7 +63,7 @@ void RHSTemplate::parse(std::string filePath) {
         // and push both this literal and the metaparameter onto the parts list
         if (isMetaparameter(curr, prev)) {
             
-            literalRange.setEnd(prev.getLocation()); // Don't include the question mark in the literal
+            literalRange.setEnd(prev.getLocation().getLocWithOffset(-1)); // Don't include the question mark in the literal
             _templateParts.push_back(RHSTemplatePart(RHSTemplatePart::LITERAL, _sr->readSourceRange(literalRange)));
             _templateParts.push_back(RHSTemplatePart(RHSTemplatePart::METAVARIABLE, curr.getIdentifierInfo()->getName()));
             
@@ -79,8 +79,11 @@ void RHSTemplate::parse(std::string filePath) {
         prev = curr;
     }
     
-    // Read the final literal and add this part as well
-    _templateParts.push_back(RHSTemplatePart(RHSTemplatePart::LITERAL, _sr->readSourceRange(literalRange)));
+    // Read the final literal and add this part as well,
+    // but only if we don't end on a metavariable (in which case the template range will be empty)
+    if (literalRange.getBegin() != literalRange.getEnd()) {
+        _templateParts.push_back(RHSTemplatePart(RHSTemplatePart::LITERAL, _sr->readSourceRange(literalRange)));
+    }
     
     _lexer->endLexing();
 }

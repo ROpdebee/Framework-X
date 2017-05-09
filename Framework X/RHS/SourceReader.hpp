@@ -14,6 +14,8 @@
 #include <clang/Basic/SourceManager.h>
 #include <clang/AST/ASTTypeTraits.h>
 
+#include "../common/Lexer.hpp"
+
 using clang::SourceManager;
 using clang::SourceRange;
 using clang::LangOptions;

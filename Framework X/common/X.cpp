@@ -44,7 +44,20 @@ public:
         auto node(nodes.find("root"));
         assert(node != nodes.end() && "Root node is required");
         
-        _pRewriter->ReplaceText(node->second.getSourceRange(), _tmpl.instantiate(res));
+        SourceRange sr(node->second.getSourceRange());
+        SourceManager &sm(_pRewriter->getSourceMgr());
+        const LangOptions &lops(_pRewriter->getLangOpts());
+        
+        // Make sure trailing literals in the root's source range are fully included in the range
+        sr.setEnd(X::Lexer::getEndOfLiteral(sr.getEnd(), sm, lops));
+        
+        // Extend the source range to also include the trailing semicolon, if there is one
+        SourceLocation trailingSemiLoc(X::Lexer::getSemiAfterLocation(sr.getEnd(), _pRewriter->getSourceMgr(), _pRewriter->getLangOpts()));
+        if (trailingSemiLoc.isValid()) {
+            sr.setEnd(trailingSemiLoc);
+        }
+        
+        _pRewriter->ReplaceText(sr, _tmpl.instantiate(res));
     }
 };
 

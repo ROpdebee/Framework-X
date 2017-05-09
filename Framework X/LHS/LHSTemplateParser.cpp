@@ -63,14 +63,23 @@ bool LHSParserVisitor::parseSubtreeToTemplate(StmtOrDecl subtree) {
     // The start and end location of the node, as written in the file before preprocessing
     TemplateLocation locStart(TemplateLocation::fromSourceLocation(subtree.getLocStart(), _sm));
     TemplateLocation locEnd(TemplateLocation::fromSourceLocation(subtree.getLocEnd(), _sm));
-    TemplateRange sourceRange(locStart, locEnd);
+    
+    // Expand the range to include the full trailing literal
+    // Do this even if this subtree is not a literal, as it may contain a literal
+    SourceLocation literalSLoc(Lexer::getEndOfLiteral(subtree.getLocEnd(), _sm, _lops));
+    TemplateLocation locEndWithLiteral(TemplateLocation::fromSourceLocation(literalSLoc, _sm));
+    
+    // Expand the range to include the trailing semicolon, if there is one.
+    // This location will be invalid if there is no trailing semi, so take care of that
+    SourceLocation semiSLoc(Lexer::getSemiAfterLocation(literalSLoc, _sm, _lops));
+    TemplateLocation locEndWithSemi(semiSLoc.isValid() ? TemplateLocation::fromSourceLocation(semiSLoc, _sm) : locEndWithLiteral);
     
     // If the template range of this node comes after the range of this subtree,
     // then don't search any further in any subtree of this node and continue to
     // search in the next subtrees
     //  Template:           [........]
     //  Subtree:    [...]
-    if (sourceRange.end < _templateSourceRange.begin) {
+    if (locEnd < _templateSourceRange.begin) {
         return true;
     }
     
@@ -78,7 +87,7 @@ bool LHSParserVisitor::parseSubtreeToTemplate(StmtOrDecl subtree) {
     // then abort the search as we overshot the template and couldn't find it (subtrees are processed preorder)
     //  Template:   [....]
     //  Subtree:            [....]
-    if (sourceRange.begin > _templateSourceRange.end) {
+    if (locStart > _templateSourceRange.end) {
         throw MalformedConfigException("Template overshot: LHS parsing could not match the template range to a valid series of AST subtrees");
     }
     
@@ -87,10 +96,7 @@ bool LHSParserVisitor::parseSubtreeToTemplate(StmtOrDecl subtree) {
     // that will be done further down
     //  Template:   [.............]
     //  Subtree:    [....]
-    //
-    // If the template range does not reach until the end of this source range, don't try to parse it,
-    // but also don't raise an exception. One of our children may start at the same source location as us
-    if (sourceRange.begin == _templateSourceRange.begin && sourceRange.end <= _templateSourceRange.end) {
+    if (locStart == _templateSourceRange.begin) {
         templateConstructionBegan = true;
     }
     
@@ -101,10 +107,9 @@ bool LHSParserVisitor::parseSubtreeToTemplate(StmtOrDecl subtree) {
         
         // If our ending location is greater than the template's,
         // the template spans this subtree only partially and is invalid
-        // FIXME: Semicolons and literals may cause the subtree end location to be counterintuitive
         //  Template:   [.............]
         //  Subtree:              [......]
-        if (sourceRange.end > _templateSourceRange.end) {
+        if (locEnd > _templateSourceRange.end) {
             throw MalformedConfigException("Template only partially spans a subtree");
         }
         
@@ -113,9 +118,12 @@ bool LHSParserVisitor::parseSubtreeToTemplate(StmtOrDecl subtree) {
         
         // If our end is also the end of the template, we'll end the template here
         // Also end the traversal, so we'll continue on to parse metavariables
+        // Make sure to also include semicolons and expanded literals in this check,
+        // as they are normally not included in the source range
         //  Template: [...........]
         //  Subtree:        [.....]
-        if (sourceRange.end == _templateSourceRange.end) {
+        if (locEndWithSemi == _templateSourceRange.end || locEndWithLiteral == _templateSourceRange.end
+            || locEnd == _templateSourceRange.end) {
             templateParsed = true;
             return false;
         } else {
@@ -151,12 +159,12 @@ bool LHSParserVisitor::parseSubtreeToTemplate(StmtOrDecl subtree) {
     //  Subtree:    [.............]
     
     // Case 2:
-    if (_templateSourceRange.begin < sourceRange.begin) {
+    if (_templateSourceRange.begin < locStart) {
         throw MalformedConfigException("Could not find a subtree for the start of the template range");
     }
     
     // Case 3:
-    if (_templateSourceRange.end > sourceRange.end) {
+    if (_templateSourceRange.end > locEndWithSemi) {
         throw MalformedConfigException("Template will partially span a subtree");
     }
     
@@ -171,6 +179,19 @@ bool LHSParserVisitor::parseMetavariables(StmtOrDecl subtree) {
     TemplateLocation locEnd(TemplateLocation::fromSourceLocation(subtree.getLocEnd(), _sm));
     TemplateRange sourceRange(locStart, locEnd);
     
+    // Expand the range to include the full trailing literal
+    // Do this even if this subtree is not a literal, as it may contain a literal
+    SourceLocation literalSLoc(Lexer::getEndOfLiteral(subtree.getLocEnd(), _sm, _lops));
+    TemplateLocation locEndWithLiteral(TemplateLocation::fromSourceLocation(literalSLoc, _sm));
+    
+    // Expand the range to include the trailing semicolon, if there is one.
+    // This location will be invalid if there is no trailing semi, so take care of that
+    SourceLocation semiSLoc(Lexer::getSemiAfterLocation(literalSLoc, _sm, _lops));
+    TemplateLocation locEndWithSemi(semiSLoc.isValid() ? TemplateLocation::fromSourceLocation(semiSLoc, _sm) : locEndWithLiteral);
+    
+    llvm::outs() << "[" << locStart.line << ", " << locStart.column << "] -> [" << locEndWithSemi.line << ", " << locEndWithSemi.column << "]\n";
+
+    
     // Check all remaining metavariables' ranges to check if this subtree is of importance
     // Keep in mind that metavariable ranges can never overlap, simplifying our task
     bool searchSubtrees(false);
@@ -179,7 +200,7 @@ bool LHSParserVisitor::parseMetavariables(StmtOrDecl subtree) {
         
         // When we start a metavariable, do the necessary bookkeeping
         // Make sure we don't start on metavariables we can't finish, see the template matching above
-        if (metavar.range.begin == sourceRange.begin && sourceRange.end <= metavar.range.end) {
+        if (metavar.range.begin == locStart && locEnd <= metavar.range.end) {
             parsingMetavariable = &metavar;
             parsedMetavariables.insert({ metavar.identifier, SubtreeList() });
             // Do not insert the subtree just yet, it will be done further down
@@ -201,9 +222,11 @@ bool LHSParserVisitor::parseMetavariables(StmtOrDecl subtree) {
     // Very similar to template matching
     if (parsingMetavariable) {
         
+        TemplateLocation metaEnd(parsingMetavariable->range.end);
+        
         //  Metavar:   [.............]
         //  Subtree:              [......]
-        if (sourceRange.end > parsingMetavariable->range.end) {
+        if (locEnd > metaEnd) {
             throw MalformedConfigException("Metavariable only partially spans a subtree");
         }
         
@@ -211,7 +234,7 @@ bool LHSParserVisitor::parseMetavariables(StmtOrDecl subtree) {
         parsedMetavariables[parsingMetavariable->identifier].push_back(subtree);
         
         // If we're the end of the metavariable's subtree sequence, mark this metavariable as done
-        if (sourceRange.end == parsingMetavariable->range.end) {
+        if (locEndWithSemi == metaEnd || locEndWithLiteral == metaEnd || locEnd == metaEnd) {
             remainingMetavariables.erase(*parsingMetavariable);
             parsingMetavariable = nullptr;
         }

@@ -20,7 +20,7 @@
 #include <clang/Basic/TargetOptions.h>
 #include <clang/Basic/TargetInfo.h>
 
-#include "Lexer.hpp"
+#include "../common/Lexer.hpp"
 #include "SourceReader.hpp"
 #include "RHSTemplatePart.hpp"
 

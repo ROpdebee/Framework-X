@@ -1,19 +1,13 @@
 {
     "templateSource": "test.cpp",
-    "templateRange": [[12, 5], [18, 19]],
-    "metaVariables": [
-        {
-            "identifier": "condition",
-            "range": [[12, 9], [12, 22]]
-        },
-        {
-            "identifier": "body",
-            "range": [[12, 33], [16, 5]]
-        },
-        {
-            "identifier": "alt",
-            "range": [[16, 12], [18, 19]]
-        }
-    ],
+    "templateRange": [[22, 1], [28, 2]],
+    "metaVariables": [{
+                      "identifier": "private_member",
+                      "range": [[24, 5], [24, 10]]
+                      },
+                      {
+                      "identifier": "ctor",
+                      "range": [[27, 5], [27, 42]]
+                      }],
     "rhsTemplate": "templ.tmpl"
 }

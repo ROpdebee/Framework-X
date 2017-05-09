@@ -12,13 +12,11 @@ int main() {
     // Replaced!
 if (someFunction()) {
         // Replaced!
-if (someOtherFunction()) {
-            return 0x1;
-        } else return 2;
+if (someOtherFunction()) return 0x1; else return true;
     } else // Replaced!
 if (someOtherFunction()) {
         return 3;
-    } else return 4;
+    } else return 0b100;
     
     return 0;
 }

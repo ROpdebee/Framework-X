@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		451E25291EBF35EE005B9B26 /* LHSTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 451E25271EBF35EE005B9B26 /* LHSTemplate.cpp */; };
-		453F52AD1EBE1B0200C524A2 /* Lexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 453F52AB1EBE1B0200C524A2 /* Lexer.cpp */; };
 		453F52AE1EBE1B0200C524A2 /* SourceReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 453F52AC1EBE1B0200C524A2 /* SourceReader.cpp */; };
 		454874071EBF3E7B0084B711 /* LHSTemplateParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 454874061EBF3E7B0084B711 /* LHSTemplateParser.cpp */; };
+		454874091EC13D000084B711 /* Lexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 454874081EC13D000084B711 /* Lexer.cpp */; };
 		4563609A1E9CF21D00A31D00 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 456360991E9CF21D00A31D00 /* main.cpp */; };
 		4571732E1EBA84BD008B3DB2 /* X.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4571732A1EBA84BD008B3DB2 /* X.cpp */; };
 		457173321EBA84F4008B3DB2 /* LHSConfiguration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 457173301EBA84F4008B3DB2 /* LHSConfiguration.cpp */; };
@@ -33,9 +33,9 @@
 		451E25271EBF35EE005B9B26 /* LHSTemplate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LHSTemplate.cpp; path = "Framework X/LHS/LHSTemplate.cpp"; sourceTree = "<group>"; };
 		451E25281EBF35EE005B9B26 /* LHSTemplate.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LHSTemplate.hpp; path = "Framework X/LHS/LHSTemplate.hpp"; sourceTree = "<group>"; };
 		453F52A71EBE12EA00C524A2 /* test2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test2.cpp; sourceTree = "<group>"; };
-		453F52AB1EBE1B0200C524A2 /* Lexer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Lexer.cpp; path = "Framework X/RHS/Lexer.cpp"; sourceTree = "<group>"; };
 		453F52AC1EBE1B0200C524A2 /* SourceReader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SourceReader.cpp; path = "Framework X/RHS/SourceReader.cpp"; sourceTree = "<group>"; };
 		454874061EBF3E7B0084B711 /* LHSTemplateParser.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = LHSTemplateParser.cpp; path = "Framework X/LHS/LHSTemplateParser.cpp"; sourceTree = "<group>"; };
+		454874081EC13D000084B711 /* Lexer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Lexer.cpp; path = "Framework X/common/Lexer.cpp"; sourceTree = "<group>"; };
 		456360961E9CF21D00A31D00 /* Framework X */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Framework X"; sourceTree = BUILT_PRODUCTS_DIR; };
 		456360991E9CF21D00A31D00 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		456360A01E9CF23D00A31D00 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
@@ -50,7 +50,6 @@
 		457173301EBA84F4008B3DB2 /* LHSConfiguration.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = LHSConfiguration.cpp; path = "Framework X/LHS/LHSConfiguration.cpp"; sourceTree = "<group>"; };
 		457173311EBA84F4008B3DB2 /* RHSTemplate.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RHSTemplate.cpp; path = "Framework X/RHS/RHSTemplate.cpp"; sourceTree = "<group>"; };
 		457FA77F1EADFDFE001ABD05 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		45A6FE541EBE892D003CF53C /* configSchema.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = configSchema.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,8 +66,8 @@
 		4563608D1E9CF21D00A31D00 = {
 			isa = PBXGroup;
 			children = (
+				454874081EC13D000084B711 /* Lexer.cpp */,
 				454874061EBF3E7B0084B711 /* LHSTemplateParser.cpp */,
-				453F52AB1EBE1B0200C524A2 /* Lexer.cpp */,
 				453F52AC1EBE1B0200C524A2 /* SourceReader.cpp */,
 				457173301EBA84F4008B3DB2 /* LHSConfiguration.cpp */,
 				457173311EBA84F4008B3DB2 /* RHSTemplate.cpp */,
@@ -102,7 +101,6 @@
 				453F52A71EBE12EA00C524A2 /* test2.cpp */,
 				457FA77F1EADFDFE001ABD05 /* README.md */,
 				4571731A1EBA746C008B3DB2 /* config.json */,
-				45A6FE541EBE892D003CF53C /* configSchema.json */,
 			);
 			path = "Framework X";
 			sourceTree = "<group>";
@@ -164,9 +162,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				454874091EC13D000084B711 /* Lexer.cpp in Sources */,
 				454874071EBF3E7B0084B711 /* LHSTemplateParser.cpp in Sources */,
 				451E25291EBF35EE005B9B26 /* LHSTemplate.cpp in Sources */,
-				453F52AD1EBE1B0200C524A2 /* Lexer.cpp in Sources */,
 				453F52AE1EBE1B0200C524A2 /* SourceReader.cpp in Sources */,
 				457173321EBA84F4008B3DB2 /* LHSConfiguration.cpp in Sources */,
 				457173331EBA84F4008B3DB2 /* RHSTemplate.cpp in Sources */,

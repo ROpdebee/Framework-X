@@ -29,3 +29,16 @@ bool Lexer::lex(Token &tok) const {
     _prep.Lex(tok);
     return tok.isNot(clang::tok::eof);
 }
+
+SourceLocation Lexer::getSemiAfterLocation(SourceLocation sl, const SourceManager &sm, const LangOptions &lops) {
+    Token tok;
+    bool failure = clang::Lexer::getRawToken(sl.getLocWithOffset(1), tok, sm, lops, /*IgnoreWhitespace=*/true);
+    
+    if (failure || tok.isNot(clang::tok::semi)) return SourceLocation();
+    else return tok.getLocation();
+}
+
+SourceLocation Lexer::getEndOfLiteral(SourceLocation sl, const SourceManager &sm, const LangOptions &lops) {
+    // Take offset=1 to point to the last character in the literal
+    return clang::Lexer::getLocForEndOfToken(sl, /*Offset=*/1, sm, lops);
+}
