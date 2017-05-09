@@ -169,6 +169,9 @@ void X::transform(SourceList sourceFiles, const CompilationDatabase &compilation
     LHSParserConsumer consumer(lhsConfig);
     consumer.HandleTranslationUnit(templateSourceAST->getASTContext());
     
+    unique_ptr<LHSTemplate> lhs(consumer.retrieveLHSTemplate());
+    lhs->dump();
+    
     /*RHSTemplate rhs(lhsConfig.getRHSTemplate());
     InternalCallback cb(rhs, false);
     consumeASTs(ASTs, llvm::make_unique<LHSParserConsumer>(lhsConfig), cb);*/

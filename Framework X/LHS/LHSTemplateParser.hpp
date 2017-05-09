@@ -20,6 +20,7 @@
 #include <clang/AST/ASTTypeTraits.h>
 
 #include "LHSConfiguration.hpp"
+#include "LHSTemplate.hpp"
 #include "../common/Lexer.hpp"
 
 using namespace clang;
@@ -27,6 +28,8 @@ using namespace clang::ast_type_traits;
 using namespace std;
 
 namespace X {
+    
+class LHSTemplate;
 
 /// \class StmtOrDecl
 /// \brief A small encapsulation class that can contain both Stmts and Decls
@@ -60,9 +63,25 @@ public:
         if (_kind == DECL) return getAsDecl()->getLocStart();
         else return getAsStmt()->getLocStart();
     }
+    
     inline SourceLocation getLocEnd() {
         if (_kind == DECL) return getAsDecl()->getLocEnd();
-        else return getAsStmt()->getLocEnd(); }
+        else return getAsStmt()->getLocEnd();
+    }
+    
+    inline bool operator<(StmtOrDecl const &other) const {
+        return _node < other._node;
+    }
+    
+    inline void dump() const {
+        if (_kind == DECL) getAsDecl()->dump();
+        else getAsStmt()->dump();
+    }
+    
+    /// Use with extreme caution
+    inline void *getRawPtr() const {
+        return _node;
+    }
     
 private:
     void *_node; ///< The Stmt or Decl node
@@ -77,7 +96,8 @@ using SubtreeQueue = queue<StmtOrDecl>;
 /// \brief An LHS template parser implementing the RecursiveASTVisitor class in order to visit all AST nodes of the template source
 class LHSParserVisitor : public RecursiveASTVisitor<LHSParserVisitor> {
 public:
-    LHSParserVisitor(ASTContext &ctx, LHSConfiguration &cfg) : _sm(ctx.getSourceManager()), _lops(ctx.getLangOpts()), _templateSourceRange(cfg.getTemplateRange()) {
+    LHSParserVisitor(ASTContext &ctx, LHSConfiguration &cfg)
+    : _sm(ctx.getSourceManager()), _lops(ctx.getLangOpts()), _templateSourceRange(cfg.getTemplateRange()), _tmpl(llvm::make_unique<LHSTemplate>()) {
         auto metavars(cfg.getMetavariableRanges());
         remainingMetavariables = set<MetavarLoc>(metavars.begin(), metavars.end());
     }
@@ -95,6 +115,7 @@ private:
     const SourceManager &_sm;
     const LangOptions &_lops;
     const TemplateRange &_templateSourceRange;
+    unique_ptr<LHSTemplate> _tmpl;
     
     //
     // State variables to indicate the progress of parsing the template
@@ -115,11 +136,6 @@ private:
     /// The set of metavariables that still need to be parsed
     set<MetavarLoc> remainingMetavariables;
     
-    /// A mapping containing the metavariables that have been parsed
-    /// It maps from a metavariable identifier to a sequence of subtrees
-    /// that the metavariable represents
-    map<string, SubtreeList> parsedMetavariables;
-    
     /// \brief Method to generally parse a subtree (being either a Stmt or a Decl) to a template.
     /// \return Boolean indicating if the the template was parsed
     bool parseSubtreeToTemplate(StmtOrDecl subtree);
@@ -137,6 +153,11 @@ private:
     /// \return The result of the traversal
     bool continueTraversal(StmtOrDecl subtree);
     
+    
+    unique_ptr<LHSTemplate> retrieveLHSTemplate() {
+        return move(_tmpl);
+    }
+    
     ~LHSParserVisitor() {} // Suppress warnings about non-virtual destructor
     
     friend class LHSParserConsumer;
@@ -146,6 +167,7 @@ private:
 /// \brief An AST consumer that forwards translation units to the LHS template parser
 class LHSParserConsumer : public ASTConsumer {
     LHSConfiguration &_cfg;
+    unique_ptr<LHSTemplate> _tmpl;
     
 public:
     LHSParserConsumer(LHSConfiguration &cfg) : _cfg(cfg) {}
@@ -178,11 +200,9 @@ public:
             subtree = visitor.templateSubtrees.front();
             
             if (subtree.getKind() == StmtOrDecl::Kind::DECL) {
-                subtree.getAsDecl()->dump();
                 visitor.TraverseDecl(subtree.getAsDecl());
             } else {
                 visitor.TraverseStmt(subtree.getAsStmt());
-                subtree.getAsStmt()->dump();
             }
             
             visitor.templateSubtrees.pop();
@@ -196,17 +216,13 @@ public:
             throw MalformedConfigException("Some metavariables could not be parsed");
         }
         
-        for (auto &meta : visitor.parsedMetavariables) {
-            llvm::outs() << "Metavariable " << meta.first << "\n";
-            for (auto &subtree : meta.second) {
-                if (subtree.getKind() == StmtOrDecl::Kind::DECL) {
-                    subtree.getAsDecl()->dump();
-                } else {
-                    subtree.getAsStmt()->dump();
-                }
-            }
-            llvm::outs() << "\n";
-        }
+        _tmpl = visitor.retrieveLHSTemplate();
+    }
+    
+    /// Retrieve the constructed LHS template
+    unique_ptr<LHSTemplate> retrieveLHSTemplate() {
+        assert(_tmpl && "Not in possession of template");
+        return move(_tmpl);
     }
 };
 

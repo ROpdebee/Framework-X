@@ -114,7 +114,9 @@ bool LHSParserVisitor::parseSubtreeToTemplate(StmtOrDecl subtree) {
         }
         
         // We're now definitely part of the template, so we add ourselves to the node queue
+        // and to the subtree list of the LHS template
         templateSubtrees.push(subtree);
+        _tmpl->addTemplateSubtree(subtree);
         
         // If our end is also the end of the template, we'll end the template here
         // Also end the traversal, so we'll continue on to parse metavariables
@@ -189,9 +191,6 @@ bool LHSParserVisitor::parseMetavariables(StmtOrDecl subtree) {
     SourceLocation semiSLoc(Lexer::getSemiAfterLocation(literalSLoc, _sm, _lops));
     TemplateLocation locEndWithSemi(semiSLoc.isValid() ? TemplateLocation::fromSourceLocation(semiSLoc, _sm) : locEndWithLiteral);
     
-    llvm::outs() << "[" << locStart.line << ", " << locStart.column << "] -> [" << locEndWithSemi.line << ", " << locEndWithSemi.column << "]\n";
-
-    
     // Check all remaining metavariables' ranges to check if this subtree is of importance
     // Keep in mind that metavariable ranges can never overlap, simplifying our task
     bool searchSubtrees(false);
@@ -202,7 +201,6 @@ bool LHSParserVisitor::parseMetavariables(StmtOrDecl subtree) {
         // Make sure we don't start on metavariables we can't finish, see the template matching above
         if (metavar.range.begin == locStart && locEnd <= metavar.range.end) {
             parsingMetavariable = &metavar;
-            parsedMetavariables.insert({ metavar.identifier, SubtreeList() });
             // Do not insert the subtree just yet, it will be done further down
             break; // No need to check the rest of the metavariables, they cannot overlap
         }
@@ -231,7 +229,7 @@ bool LHSParserVisitor::parseMetavariables(StmtOrDecl subtree) {
         }
         
         // We're definitely part of the metavariable's subtree sequence, so we add ourselves to it
-        parsedMetavariables[parsingMetavariable->identifier].push_back(subtree);
+        _tmpl->addMetavariable(parsingMetavariable->identifier, subtree);
         
         // If we're the end of the metavariable's subtree sequence, mark this metavariable as done
         if (locEndWithSemi == metaEnd || locEndWithLiteral == metaEnd || locEnd == metaEnd) {

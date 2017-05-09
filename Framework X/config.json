@@ -3,7 +3,7 @@
     "templateRange": [[22, 1], [28, 2]],
     "metaVariables": [{
                       "identifier": "private_member",
-                      "range": [[24, 5], [24, 10]]
+                      "range": [[24, 5], [25, 10]]
                       },
                       {
                       "identifier": "ctor",
