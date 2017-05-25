@@ -116,7 +116,11 @@ bool LHSParserVisitor::parseSubtreeToTemplate(StmtOrDecl subtree) {
         // We're now definitely part of the template, so we add ourselves to the node queue
         // and to the subtree list of the LHS template
         templateSubtrees.push(subtree);
-        _tmpl->addTemplateSubtree(subtree);
+        if (subtree.getKind() == StmtOrDecl::STMT) {
+            _tmpl->addTemplateSubtree(DynTypedNode::create(*subtree.getAsStmt()));
+        } else {
+            _tmpl->addTemplateSubtree(DynTypedNode::create(*subtree.getAsDecl()));
+        }
         
         // If our end is also the end of the template, we'll end the template here
         // Also end the traversal, so we'll continue on to parse metavariables
@@ -200,9 +204,26 @@ bool LHSParserVisitor::parseMetavariables(StmtOrDecl subtree) {
         // When we start a metavariable, do the necessary bookkeeping
         // Make sure we don't start on metavariables we can't finish, see the template matching above
         if (metavar.range.begin == locStart && locEnd <= metavar.range.end) {
-            parsingMetavariable = &metavar;
-            // Do not insert the subtree just yet, it will be done further down
-            break; // No need to check the rest of the metavariables, they cannot overlap
+            // If the current metavariable parameterizes the identifier (name) only, it is possible
+            // that our children contain other metavariables. We only allow name-only parameterization
+            // on single NamedDecls.
+            if (metavar.nameOnly) {
+                if (subtree.getKind() == StmtOrDecl::DECL && llvm::isa<NamedDecl>(*subtree.getAsDecl())
+                    && (locEndWithSemi == metavar.range.end
+                        || locEndWithLiteral == metavar.range.end
+                        || locEnd == metavar.range.end)) {
+                    // Don't add ourselves yet, it will be done after this loop
+                    parsingMetavariable = &metavar;
+                } else {
+                    throw MalformedConfigException("Name-only metavariable does not consist of a single NamedDecl");
+                }
+                continue; // Subtrees may contain metavariables
+            // Otherwise, for non-name-only metavariables, there cannot be overlapping metavars.
+            } else {
+                parsingMetavariable = &metavar;
+                // Do not insert the subtree just yet, it will be done further down
+                break; // No need to check the rest of the metavariables, they cannot overlap
+            }
         }
         
         // When at least one of our subtrees contains a metavariable, mark it as such
@@ -221,6 +242,7 @@ bool LHSParserVisitor::parseMetavariables(StmtOrDecl subtree) {
     if (parsingMetavariable) {
         
         TemplateLocation metaEnd(parsingMetavariable->range.end);
+        bool nameOnly(parsingMetavariable->nameOnly);
         
         //  Metavar:   [.............]
         //  Subtree:              [......]
@@ -229,7 +251,11 @@ bool LHSParserVisitor::parseMetavariables(StmtOrDecl subtree) {
         }
         
         // We're definitely part of the metavariable's subtree sequence, so we add ourselves to it
-        _tmpl->addMetavariable(parsingMetavariable->identifier, subtree);
+        if (subtree.getKind() == StmtOrDecl::STMT) {
+            _tmpl->addMetavariable(*parsingMetavariable, DynTypedNode::create(*subtree.getAsStmt()));
+        } else {
+            _tmpl->addMetavariable(*parsingMetavariable, DynTypedNode::create(*subtree.getAsDecl()));
+        }
         
         // If we're the end of the metavariable's subtree sequence, mark this metavariable as done
         if (locEndWithSemi == metaEnd || locEndWithLiteral == metaEnd || locEnd == metaEnd) {
@@ -237,9 +263,10 @@ bool LHSParserVisitor::parseMetavariables(StmtOrDecl subtree) {
             parsingMetavariable = nullptr;
         }
         
-        // Don't descend further down the subtree, we disallow partial subtrees
+        // Don't descend further down the subtree, we disallow partial subtrees, unless we're parsing a name-only metavar
         // Continue parsing
-        return true;
+        if (!nameOnly)
+            return true;
     }
     
     // We're currently not parsing a metavariable, but there may be metavariables in one of our children

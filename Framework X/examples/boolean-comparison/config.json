@@ -1,0 +1,11 @@
+{
+    "templateSource": "Example.cpp",
+    "templateRange": [[4, 9], [4, 21]],
+    "metaVariables": [{
+                      "identifier": "lhs",
+                      "range": [[4, 9], [4, 13]]
+                      }],
+    "rhsTemplate": "templ.tmpl",
+    "overwriteSourceFiles": false,
+    "shouldTransformSource": false
+}

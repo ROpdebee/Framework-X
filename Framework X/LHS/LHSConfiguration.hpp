@@ -141,6 +141,13 @@ public:
         return begin > tr.begin;
     }
 };
+
+inline ostream &operator<<(ostream &out, const TemplateLocation &tl) {
+    return out << "[" << tl.column << ", " << tl.line << "]";
+}
+inline ostream &operator<<(ostream &out, const TemplateRange &tr) {
+    return out << tr.begin << " -> " << tr.end;
+}
     
 // Custom JSON conversion to TemplateLocations and TemplateRanges
 inline void from_json(const json &j, TemplateLocation &loc) {
@@ -153,19 +160,45 @@ inline void from_json(const json &j, TemplateRange &range) {
     range.end = j[1];
 }
     
+/// \class Metavariable
+/// \brief Represents a LHS metavariable, including its identifier and properties
+class Metavariable {
+public:
+    string identifier;
+    bool nameOnly = false; ///< Indicates that for NamedDecl nodes, only the name is parameterized, not the type.
+    
+    Metavariable(string id) : identifier(id) {}
+    
+    inline bool operator<(const Metavariable &other) const { return identifier < other.identifier; }
+};
+
+    
 /// \class MetavarLoc
-/// \brief A metavariable identifier and its associated template range
-class MetavarLoc {
+/// \brief A metavariable and its associated template range
+class MetavarLoc : public X::Metavariable {
 public:
     TemplateRange range;
-    string identifier;
     
-    MetavarLoc(string ident, TemplateRange rng) : range(rng), identifier(ident) {};
-    MetavarLoc() : range(TemplateRange::dummy()) {};
+    MetavarLoc(string ident, TemplateRange rng) : Metavariable(ident), range(rng) {};
+    MetavarLoc() : Metavariable(""), range(TemplateRange::dummy()) {};
     
     inline bool isValid() const { return !range.isDummy(); }
-    
-    inline bool operator<(const MetavarLoc &other) const { return identifier < other.identifier; }
+    /// Custom comparator to order MetavarLoc's.
+    /// This dictates in what order metavariables should be parsed from the source AST.
+    /// Metavariables with ranges starting earlier, or with larger ranges if the two ranges
+    /// start at the same time, precede metavariables with ranges starting later, or smaller ones.
+    /// When the ranges are equivalent, nameOnly metavariables take priority over non-nameOnly metavariables.
+    /// If the nameOnly flag is equal on both, they are ordered based on identifier.
+    inline bool operator<(const MetavarLoc &other) const {
+        if (range == other.range) {
+            if (nameOnly == other.nameOnly) return identifier < other.identifier;
+            else return nameOnly;
+        } else if (range.begin == other.range.begin) {
+            return range.end > other.range.end;
+        } else {
+            return range.begin < other.range.begin;
+        }
+    }
 };
 
 /// \class LHSConfiguration
@@ -177,6 +210,7 @@ class LHSConfiguration {
     vector<MetavarLoc> metavariableRanges; ///< The metavariables and their associated ranges in the template
     string rhsTemplate; ///< The path to the RHS template to be used with this LHS template
     bool transformTemplateSource; ///< Flag indicating if the template source file must be transformed as well
+    bool overwriteSourceFiles; ///< Flag indicating if the transformation should overwrite the original source files
     
 public:
     /// Construct a LHS configuration from the given JSON file.
@@ -192,6 +226,7 @@ public:
     const vector<MetavarLoc>& getMetavariableRanges() { return metavariableRanges; }
     const string& getRHSTemplate() { return rhsTemplate; }
     bool shouldTransformTemplateSource() { return transformTemplateSource; }
+    bool shouldOverwriteSourceFiles() { return overwriteSourceFiles; }
 };
 
 }

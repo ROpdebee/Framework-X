@@ -1,0 +1,15 @@
+{
+    "templateSource": "Example.cpp",
+    "templateRange": [[3, 1], [5, 1]],
+    "metaVariables": [{
+                      "identifier": "functionName",
+                      "range": [[3, 1], [5, 1]],
+                      "nameOnly": true
+                      },
+                      {
+                      	"identifier": "body",
+                      	"range": [[3, 16], [5, 1]]
+                      }],
+    "rhsTemplate": "templ.tmpl",
+    "overwriteSourceFiles": false
+}

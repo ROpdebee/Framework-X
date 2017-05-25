@@ -63,6 +63,13 @@ public:
     /// \param node The AST node to read the source code for
     /// \return The source code for this AST node
     std::string readSourceRange(const DynTypedNode &node) const;
+    
+    /// \brief Read a source range from a file, given a source range and a source manager.
+    /// It attempts to expand literals and include the trailing semicolon when reading the source range,
+    /// \param sr The source range to read.
+    /// \param sm The source manager to use.
+    /// \return The source code for this source range, including the trailing semicolon.
+    std::string readSourceRangeIncludingSemi(SourceRange sr, const SourceManager &sm) const;
 
 };
 

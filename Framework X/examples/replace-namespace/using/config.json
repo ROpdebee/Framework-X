@@ -1,0 +1,7 @@
+{
+    "templateSource": "common/Lexer.cpp",
+    "templateRange": [[11, 1], [11, 18]],
+    "metaVariables": [],
+    "rhsTemplate": "templ.tmpl",
+    "overwriteSourceFiles": false
+}

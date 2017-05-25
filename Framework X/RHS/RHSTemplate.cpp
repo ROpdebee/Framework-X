@@ -63,8 +63,12 @@ void RHSTemplate::parse(std::string filePath) {
         // and push both this literal and the metaparameter onto the parts list
         if (isMetaparameter(curr, prev)) {
             
-            literalRange.setEnd(prev.getLocation().getLocWithOffset(-1)); // Don't include the question mark in the literal
-            _templateParts.push_back(RHSTemplatePart(RHSTemplatePart::LITERAL, _sr->readSourceRange(literalRange)));
+            // When the location of the question mark is also the start of the literal range,
+            // the literal range is empty and should not be read.
+            if (prev.getLocation() != literalRange.getBegin()) {
+                literalRange.setEnd(prev.getLocation().getLocWithOffset(-1)); // Don't include the question mark in the literal
+                _templateParts.push_back(RHSTemplatePart(RHSTemplatePart::LITERAL, _sr->readSourceRange(literalRange)));
+            }
             _templateParts.push_back(RHSTemplatePart(RHSTemplatePart::METAVARIABLE, curr.getIdentifierInfo()->getName()));
             
             // Start a new literal range
@@ -104,6 +108,39 @@ std::string RHSTemplate::instantiate(const MatchFinder::MatchResult& bindings) {
         else {
             node = nodes.find(part.content);
             if (node != nodes.end()) instantiated += _sr->readSourceRange(node->second, *bindings.SourceManager);
+            else std::cerr << "No binding for " << part.content << std::endl;
+        }
+    }
+    
+    return instantiated;
+}
+
+std::string RHSTemplate::instantiate(X::MatchResult& bindings, SourceManager &sm) {
+    // See above for more details
+    std::string instantiated = "";
+    
+    for (RHSTemplatePart part : _templateParts) {
+        if (part.type == RHSTemplatePart::LITERAL) instantiated += part.content;
+        else {
+            auto metavarIt = bindings.metavariables.find(part.content);
+            if (metavarIt != bindings.metavariables.end()) {
+                auto metavar(metavarIt->first);
+                auto binding(metavarIt->second);
+                if (metavar.nameOnly) {
+                    instantiated += binding.getNode().get<NamedDecl>()->getName();
+                } else {
+                    SourceRange fullSourceRange;
+                    if (binding.isVirtual()) {
+                        auto children = binding.getChildren();
+                        fullSourceRange.setBegin(children[0].getNode().getSourceRange().getBegin());
+                        fullSourceRange.setEnd(children[children.size()-1].getNode().getSourceRange().getEnd());
+                    } else {
+                        fullSourceRange = binding.getNode().getSourceRange();
+                    }
+                    
+                    instantiated += _sr->readSourceRangeIncludingSemi(fullSourceRange, sm);
+                }
+            }
             else std::cerr << "No binding for " << part.content << std::endl;
         }
     }

@@ -52,12 +52,31 @@ public:
         sr.setEnd(X::Lexer::getEndOfLiteral(sr.getEnd(), sm, lops));
         
         // Extend the source range to also include the trailing semicolon, if there is one
-        SourceLocation trailingSemiLoc(X::Lexer::getSemiAfterLocation(sr.getEnd(), _pRewriter->getSourceMgr(), _pRewriter->getLangOpts()));
+        SourceLocation trailingSemiLoc(X::Lexer::getSemiAfterLocation(sr.getEnd(), sm, lops));
         if (trailingSemiLoc.isValid()) {
             sr.setEnd(trailingSemiLoc);
         }
         
         _pRewriter->ReplaceText(sr, _tmpl.instantiate(res));
+    }
+    
+    void run(X::MatchResult &res) {
+        auto &rootNode(res.root);
+        SourceRange sr(rootNode[0].getSourceRange().getBegin(), rootNode[rootNode.size()-1].getSourceRange().getEnd());
+        
+        SourceManager &sm(_pRewriter->getSourceMgr());
+        const LangOptions &lops(_pRewriter->getLangOpts());
+        
+        // Make sure trailing literals in the root's source range are fully included in the range
+        sr.setEnd(X::Lexer::getEndOfLiteral(sr.getEnd(), sm, lops));
+        
+        // Extend the source range to also include the trailing semicolon, if there is one
+        SourceLocation trailingSemiLoc(X::Lexer::getSemiAfterLocation(sr.getEnd(), sm, lops));
+        if (trailingSemiLoc.isValid()) {
+            sr.setEnd(trailingSemiLoc);
+        }
+        
+        _pRewriter->ReplaceText(sr, _tmpl.instantiate(res, sm));
     }
 };
 
@@ -170,11 +189,18 @@ void X::transform(SourceList sourceFiles, const CompilationDatabase &compilation
     consumer.HandleTranslationUnit(templateSourceAST->getASTContext());
     
     unique_ptr<LHSTemplate> lhs(consumer.retrieveLHSTemplate());
-    lhs->dump();
     
-    /*RHSTemplate rhs(lhsConfig.getRHSTemplate());
-    InternalCallback cb(rhs, false);
-    consumeASTs(ASTs, llvm::make_unique<LHSParserConsumer>(lhsConfig), cb);*/
+    vector<ASTResult> results(lhs->matchAST(ASTs));
+    
+    RHSTemplate rhs(lhsConfig.getRHSTemplate());
+    InternalCallback cb(rhs, lhsConfig.shouldOverwriteSourceFiles());
+    for (ASTResult &res : results) {
+        cb.setRewriter(llvm::make_unique<Rewriter>(res.ast->getSourceManager(), res.ast->getLangOpts()));
+        for (MatchResult &match : res.matches) {
+            cb.run(match);
+        }
+        cb.fileProcessed(res.ast->getSourceManager().getMainFileID(), res.ast->getMainFileName());
+    }
 }
 
 
@@ -185,7 +211,7 @@ template void X::transform<TypeMatcher>(const SourceList &sourceFiles, const Com
 template void X::transform<TypeLocMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, TypeLocMatcher &matcher, string rhs, bool overwriteChangedFiles);
 template void X::transform<NestedNameSpecifierMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierMatcher &matcher, string rhs, bool overwriteChangedFiles);
 template void X::transform<NestedNameSpecifierLocMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierLocMatcher &matcher, string rhs, bool overwriteChangedFiles);
-template void X::transform<CXXCtorInitializerMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, CXXCtorInitializerMatcher &matcher, string rhs, bool overwriteChangedFiles);
+//template void X::transform<CXXCtorInitializerMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, CXXCtorInitializerMatcher &matcher, string rhs, bool overwriteChangedFiles);
 
 // Same for LHS matchers, RHS callback version of transform
 template void X::transform<StatementMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, StatementMatcher &matcher, XCallback &cb);
@@ -194,4 +220,4 @@ template void X::transform<TypeMatcher>(const SourceList &sourceFiles, const Com
 template void X::transform<TypeLocMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, TypeLocMatcher &matcher, XCallback &cb);
 template void X::transform<NestedNameSpecifierMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierMatcher &matcher, XCallback &cb);
 template void X::transform<NestedNameSpecifierLocMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, NestedNameSpecifierLocMatcher &matcher, XCallback &cb);
-template void X::transform<CXXCtorInitializerMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, CXXCtorInitializerMatcher &matcher, XCallback &cb);
+//template void X::transform<CXXCtorInitializerMatcher>(const SourceList &sourceFiles, const CompilationDatabase &compilations, CXXCtorInitializerMatcher &matcher, XCallback &cb);

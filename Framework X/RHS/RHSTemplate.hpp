@@ -21,6 +21,7 @@
 #include <clang/Basic/TargetInfo.h>
 
 #include "../common/Lexer.hpp"
+#include "../LHS/LHSTemplate.hpp"
 #include "SourceReader.hpp"
 #include "RHSTemplatePart.hpp"
 
@@ -76,6 +77,9 @@ public:
     /// \param bindings The result of AST matching using a MatchFinder
     /// \return An instance of the template
     std::string instantiate(const MatchFinder::MatchResult& bindings);
+    
+    /// \brief Instantiate the RHS template using metavariable bindings obtained from template matching.
+    std::string instantiate(X::MatchResult& bindings, SourceManager &sm);
     
     /// \brief Print out the template to the error stream in its parsed form.
     ///

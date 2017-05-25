@@ -1,0 +1,15 @@
+{
+    "templateSource": "LargeData.cpp",
+    "templateRange": [[5, 1], [10, 1]],
+    "metaVariables": [{
+                      "identifier": "functionName",
+                      "range": [[5, 1], [10, 1]],
+                      "nameOnly": true
+                      },
+                      {
+                      	"identifier": "revelantBody",
+                      	"range": [[9, 5], [9, 11]]
+                      }],
+    "rhsTemplate": "templ.tmpl",
+    "overwriteSourceFiles": false
+}

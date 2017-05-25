@@ -213,6 +213,7 @@ public:
             for (auto &meta : visitor.remainingMetavariables) {
                 llvm::errs() << "Failed to parse metavariable " << meta.identifier << "\n";
             }
+            
             throw MalformedConfigException("Some metavariables could not be parsed");
         }
         

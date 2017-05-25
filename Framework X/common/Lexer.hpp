@@ -39,7 +39,9 @@ class Lexer {
     
 public:
     Lexer(FileManager &fMgr, SourceManager &sMgr, DiagnosticConsumer &diag, Preprocessor &prep, LangOptions &lops)
-        : _fileMgr(fMgr), _srcMgr(sMgr), _diag(diag), _prep(prep), _langOpts(lops) {};
+        : _fileMgr(fMgr), _srcMgr(sMgr), _diag(diag), _prep(prep), _langOpts(lops) {
+            _prep.SetCommentRetentionState(true, false);
+        };
     
     /// Set up the Lexer to start lexing the given file.
     /// \param filePath Path to the file to be lexed.

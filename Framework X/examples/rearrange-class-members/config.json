@@ -1,0 +1,19 @@
+{
+    "templateSource": "AB.cpp",
+    "templateRange": [[3, 1], [8, 2]],
+    "metaVariables": [{
+                      "identifier": "private_members",
+                      "range": [[4, 5], [5, 10]]
+                      },
+                      {
+                      "identifier": "public_members",
+                      "range": [[7, 5], [7, 39]]
+                      },
+                      {
+                      "identifier": "classname",
+                      "range": [[3, 1], [8, 2]],
+                      "nameOnly": true
+                      }],
+    "rhsTemplate": "templ.tmpl",
+    "overwriteSourceFiles": false
+}

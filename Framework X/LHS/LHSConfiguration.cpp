@@ -37,7 +37,8 @@ static void validateRangeConstraints(TemplateRange &templateRange, vector<Metava
         
         // Since we know the range of prevMetavar starts before the range of this metavariable,
         // we do not need to check against any other range
-        if (prevMetavar.isValid() && prevMetavar.range.overlapsWith(meta.range))
+        // If any of the two metavariables have only their name parameterized, they may still overlap
+        if (prevMetavar.isValid() && !prevMetavar.nameOnly && !meta.nameOnly && prevMetavar.range.overlapsWith(meta.range))
             throw MalformedConfigException("Source ranges for metavariables " + prevMetavar.identifier + " and " + meta.identifier + " overlap");
         
         prevMetavar = meta;
@@ -116,14 +117,24 @@ LHSConfiguration::LHSConfiguration(string jsonCfgPath) {
         transformTemplateSource = true;
     }
     
+    if (cfg.find("overwriteSourceFiles") != cfg.end()) {
+        overwriteSourceFiles = cfg["overwriteSourceFiles"].get<bool>();
+    } else {
+        overwriteSourceFiles = false;
+    }
+    
     // Complex data-types
     auto jTemplateRange(cfg["templateRange"]);
     templateRange = TemplateRange(jTemplateRange[0], jTemplateRange[1]);
     
-    // The JSON interface returns us a std::map from a string to a two-element vector of source locations
-    // We need to convert this to a vector of pairs, with each pair having a string and a range
+    // Convert JSON metavariables to MetavarLocs, including the properties on metavariables, such as nameOnly.
     for (auto &kv : cfg["metaVariables"]) {
-        metavariableRanges.push_back(MetavarLoc(kv["identifier"], TemplateRange(kv["range"][0], kv["range"][1])));
+        MetavarLoc meta(kv["identifier"], TemplateRange(kv["range"][0], kv["range"][1]));
+        // Se
+        if (kv.find("nameOnly") != kv.end()) {
+            meta.nameOnly = kv["nameOnly"];
+        }
+        metavariableRanges.push_back(meta);
     }
     
     // Now sort the vector on its ranges to allow for efficient range constraint checking.
@@ -139,14 +150,6 @@ LHSConfiguration::LHSConfiguration(string jsonCfgPath) {
     // Our JSON schema cannot handle this, hence we need to do it manually
     // This may again throw an exception, do not handle it because the config is invalid
     validateRangeConstraints(templateRange, metavariableRanges);
-}
-
-inline ostream& operator<<(ostream &out, TemplateLocation const &loc) {
-    return out << "[" << loc.line << ", " << loc.column << "]";
-}
-
-inline ostream& operator<<(ostream &out, TemplateRange const &tr) {
-    return out << tr.begin << " -> " << tr.end;
 }
 
 void LHSConfiguration::dumpConfiguration() {

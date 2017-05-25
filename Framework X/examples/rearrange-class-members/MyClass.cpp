@@ -1,12 +1,13 @@
-class Test {
+class MyClass {
     int a;
     bool performAddition;
-    
-    Test(int number) : a(number) {}
+    int private_value;
+
+public:
+    MyClass(int number) : a(number) {}
     
     int add(int b) {
-        // Replaced!
-if (performAddition) {
+        if (performAddition == true) {
             a += b;
             return a;
         } else {

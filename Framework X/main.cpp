@@ -12,26 +12,18 @@
 
 #include "common/X.hpp"
 
-using namespace clang::ast_matchers;
 using namespace X;
 
-static StatementMatcher mtchr(ifStmt(hasCondition(anyOf(binaryOperator(hasOperatorName("=="),
-                                                                       hasRHS(ignoringImpCasts(cxxBoolLiteral(equals(true)))),
-                                                                       hasLHS(stmt().bind("expr"))),
-                                                        binaryOperator(hasOperatorName("!="),
-                                                                       hasRHS(ignoringImpCasts(cxxBoolLiteral(equals(false)))),
-                                                                       hasLHS(stmt().bind("expr"))))),
-                                     hasThen(stmt().bind("body")),
-                                     hasElse(stmt().bind("alt"))).bind("root"));
-
-static llvm::cl::OptionCategory ToolCategory("Test");
+static llvm::cl::OptionCategory ToolCategory("C++ Template Transformation Tool");
 
 int main(int argc, const char **argv) {
     clang::tooling::CommonOptionsParser op(argc, argv, ToolCategory);
     
-    //X::transform(op.getSourcePathList(), op.getCompilations(), mtchr, "templ.tmpl");
-    
-    X::transform(op.getSourcePathList(), op.getCompilations(), "config.json");
+    try {
+        X::transform(op.getSourcePathList(), op.getCompilations(), "config.json");
+    } catch (const MalformedConfigException& e) {
+        llvm::errs() << e.what() << "\n";
+    }
     
     return 0;
 }

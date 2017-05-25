@@ -38,7 +38,12 @@ R"|({
 				"type": "object",
 				"properties": {
 					"identifier": "string",
-					"range": { "$ref": "#/definitions/range" }
+					"range": { "$ref": "#/definitions/range" },
+                    "nameOnly": {
+                        "type": "boolean",
+                        "description": "If true, indicates that only the name of a variable/function/class/... should be parameterized, not its type.",
+                        "default": false
+                    }
 				},
 				"required": ["identifier", "range"]
 			},
@@ -52,6 +57,11 @@ R"|({
             "type": "boolean",
             "description": "Flag to indicate whether or not the template source file should be transformed as well",
             "default": true
+        },
+        "overwriteSourceFiles": {
+            "type": "boolean",
+            "description": "Flag to indicate that the transformation should overwrite the original source files",
+            "default": false
         }
 	},
 	"required": ["templateSource", "templateRange", "metaVariables", "rhsTemplate"]

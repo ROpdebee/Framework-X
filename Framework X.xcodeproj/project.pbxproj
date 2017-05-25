@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4500F5AE1ECF23C9005BEC95 /* ASTTraversalState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4500F5AC1ECF23C9005BEC95 /* ASTTraversalState.cpp */; };
+		4500F5B01ED0AABA005BEC95 /* libjson-schema-validator.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4500F5AF1ED0AABA005BEC95 /* libjson-schema-validator.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		4500F5B31ED46D49005BEC95 /* LHSComparators.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4500F5B11ED46D49005BEC95 /* LHSComparators.cpp */; };
 		451E25291EBF35EE005B9B26 /* LHSTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 451E25271EBF35EE005B9B26 /* LHSTemplate.cpp */; };
 		453F52AE1EBE1B0200C524A2 /* SourceReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 453F52AC1EBE1B0200C524A2 /* SourceReader.cpp */; };
 		454874071EBF3E7B0084B711 /* LHSTemplateParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 454874061EBF3E7B0084B711 /* LHSTemplateParser.cpp */; };
@@ -24,15 +27,22 @@
 			dstPath = "";
 			dstSubfolderSpec = 6;
 			files = (
+				4500F5B01ED0AABA005BEC95 /* libjson-schema-validator.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4500F5A91ECF1F89005BEC95 /* LHSMatching.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LHSMatching.cpp; path = LHS/LHSMatching.cpp; sourceTree = "<group>"; };
+		4500F5AA1ECF1F89005BEC95 /* LHSMatching.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LHSMatching.hpp; path = LHS/LHSMatching.hpp; sourceTree = "<group>"; };
+		4500F5AC1ECF23C9005BEC95 /* ASTTraversalState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ASTTraversalState.cpp; path = LHS/ASTTraversalState.cpp; sourceTree = "<group>"; };
+		4500F5AD1ECF23C9005BEC95 /* ASTTraversalState.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ASTTraversalState.hpp; path = LHS/ASTTraversalState.hpp; sourceTree = "<group>"; };
+		4500F5AF1ED0AABA005BEC95 /* libjson-schema-validator.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libjson-schema-validator.dylib"; path = "Framework X/3rd/json-schema-validator/build/libjson-schema-validator.dylib"; sourceTree = "<group>"; };
+		4500F5B11ED46D49005BEC95 /* LHSComparators.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LHSComparators.cpp; path = LHS/LHSComparators.cpp; sourceTree = "<group>"; };
+		4500F5B21ED46D49005BEC95 /* LHSComparators.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LHSComparators.hpp; path = LHS/LHSComparators.hpp; sourceTree = "<group>"; };
 		451E25271EBF35EE005B9B26 /* LHSTemplate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LHSTemplate.cpp; path = "Framework X/LHS/LHSTemplate.cpp"; sourceTree = "<group>"; };
 		451E25281EBF35EE005B9B26 /* LHSTemplate.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LHSTemplate.hpp; path = "Framework X/LHS/LHSTemplate.hpp"; sourceTree = "<group>"; };
-		453F52A71EBE12EA00C524A2 /* test2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test2.cpp; sourceTree = "<group>"; };
 		453F52AC1EBE1B0200C524A2 /* SourceReader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = SourceReader.cpp; path = "Framework X/RHS/SourceReader.cpp"; sourceTree = "<group>"; };
 		454874061EBF3E7B0084B711 /* LHSTemplateParser.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = LHSTemplateParser.cpp; path = "Framework X/LHS/LHSTemplateParser.cpp"; sourceTree = "<group>"; };
 		454874081EC13D000084B711 /* Lexer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Lexer.cpp; path = "Framework X/common/Lexer.cpp"; sourceTree = "<group>"; };
@@ -40,7 +50,6 @@
 		456360991E9CF21D00A31D00 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		456360A01E9CF23D00A31D00 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		456360A11E9CF34D00A31D00 /* templ.tmpl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = templ.tmpl; sourceTree = "<group>"; };
-		456360A31E9CF35000A31D00 /* test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test.cpp; sourceTree = "<group>"; };
 		457173161EBA3D35008B3DB2 /* 3rd */ = {isa = PBXFileReference; lastKnownFileType = folder; path = 3rd; sourceTree = "<group>"; };
 		4571731A1EBA746C008B3DB2 /* config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = config.json; sourceTree = "<group>"; };
 		4571731F1EBA827C008B3DB2 /* common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = common; sourceTree = "<group>"; };
@@ -66,6 +75,7 @@
 		4563608D1E9CF21D00A31D00 = {
 			isa = PBXGroup;
 			children = (
+				4500F5AF1ED0AABA005BEC95 /* libjson-schema-validator.dylib */,
 				454874081EC13D000084B711 /* Lexer.cpp */,
 				454874061EBF3E7B0084B711 /* LHSTemplateParser.cpp */,
 				453F52AC1EBE1B0200C524A2 /* SourceReader.cpp */,
@@ -97,10 +107,14 @@
 				457173231EBA82DF008B3DB2 /* RHS */,
 				456360A01E9CF23D00A31D00 /* CMakeLists.txt */,
 				456360A11E9CF34D00A31D00 /* templ.tmpl */,
-				456360A31E9CF35000A31D00 /* test.cpp */,
-				453F52A71EBE12EA00C524A2 /* test2.cpp */,
 				457FA77F1EADFDFE001ABD05 /* README.md */,
 				4571731A1EBA746C008B3DB2 /* config.json */,
+				4500F5A91ECF1F89005BEC95 /* LHSMatching.cpp */,
+				4500F5AA1ECF1F89005BEC95 /* LHSMatching.hpp */,
+				4500F5AC1ECF23C9005BEC95 /* ASTTraversalState.cpp */,
+				4500F5AD1ECF23C9005BEC95 /* ASTTraversalState.hpp */,
+				4500F5B11ED46D49005BEC95 /* LHSComparators.cpp */,
+				4500F5B21ED46D49005BEC95 /* LHSComparators.hpp */,
 			);
 			path = "Framework X";
 			sourceTree = "<group>";
@@ -164,12 +178,14 @@
 			files = (
 				454874091EC13D000084B711 /* Lexer.cpp in Sources */,
 				454874071EBF3E7B0084B711 /* LHSTemplateParser.cpp in Sources */,
+				4500F5B31ED46D49005BEC95 /* LHSComparators.cpp in Sources */,
 				451E25291EBF35EE005B9B26 /* LHSTemplate.cpp in Sources */,
 				453F52AE1EBE1B0200C524A2 /* SourceReader.cpp in Sources */,
 				457173321EBA84F4008B3DB2 /* LHSConfiguration.cpp in Sources */,
 				457173331EBA84F4008B3DB2 /* RHSTemplate.cpp in Sources */,
 				4571732E1EBA84BD008B3DB2 /* X.cpp in Sources */,
 				4563609A1E9CF21D00A31D00 /* main.cpp in Sources */,
+				4500F5AE1ECF23C9005BEC95 /* ASTTraversalState.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -203,7 +219,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				EXCLUDED_SOURCE_FILE_NAMES = test.cpp;
+				EXCLUDED_SOURCE_FILE_NAMES = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -412,7 +428,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				EXCLUDED_SOURCE_FILE_NAMES = test.cpp;
+				EXCLUDED_SOURCE_FILE_NAMES = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -591,6 +607,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				EXCLUDED_SOURCE_FILE_NAMES = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Framework\\ X/3rd/json-schema-validator/build",
@@ -764,6 +781,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				EXCLUDED_SOURCE_FILE_NAMES = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Framework\\ X/3rd/json-schema-validator/build",
